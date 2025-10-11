@@ -2,18 +2,24 @@ name: riverpod_pagination_provider
 description: "A new Flutter package project."
 version: 0.0.1
 homepage:
+publish_to: none
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.7.0
   flutter: ">=1.17.0"
+
+riverpod_version: &riverpod_version ^3.0.0
 
 dependencies:
   flutter:
     sdk: flutter
   freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
-  riverpod: ^2.6.1
-  flutter_riverpod: ^2.6.1
+  riverpod: *riverpod_version
+  flutter_riverpod: *riverpod_version
+  flutter_toolkit:
+    git:
+      url: https://github.com/oldHarvester/flutter_toolkit.git
 
 dev_dependencies:
   flutter_test:
