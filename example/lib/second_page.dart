@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'providers/example_notifier_provider.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -24,44 +21,29 @@ class _SecondPageState extends State<SecondPage> {
     return ValueListenableBuilder(
       valueListenable: _counter,
       builder: (context, counter, child) {
-        return Consumer(
-          builder: (context, ref, child) {
-            // ref.watch(exampleProvider(counter));
-            final state = ref.watch(exampleNotifierProvider(counter));
-            return Scaffold(
-              floatingActionButton: FloatingActionButton(
-                child: Icon(Icons.add),
-                onPressed: () {
-                  _counter.value = _counter.value + 1;
-                },
-              ),
-              body: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      counter.toString(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      state.value?.join(' ').toString() ?? '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
+        return Scaffold(
+          floatingActionButton: FloatingActionButton(
+            child: Icon(Icons.add),
+            onPressed: () {
+              _counter.value = _counter.value + 1;
+            },
+          ),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  counter.toString(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-            );
-          },
+              ],
+            ),
+          ),
         );
       },
     );
