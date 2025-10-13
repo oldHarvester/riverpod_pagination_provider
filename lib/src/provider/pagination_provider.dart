@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,7 @@ import 'package:riverpod_pagination_provider/src/models/paginated_list_response/
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_state/pagination_state.dart';
 import 'package:riverpod_pagination_provider/src/utils/pagination_helpers.dart';
+import 'package:flutter_toolkit/flutter_toolkit.dart';
 
 import '../models/pagination_page_response/pagination_page_response.dart';
 import '../models/pagination_params/pagination_params.dart';
@@ -56,15 +56,22 @@ abstract class PaginationNotifierHelper<T, Z, Y> {
 
 mixin PaginationNotifierMixin<T, Z, Y>
     implements PaginationNotifierHelper<T, Z, Y> {
-  final Map<int, Completer<PaginationPageResponse<T>>> _pageCompleters = {};
+  late final CustomLogger _logger = CustomLogger(
+    owner: debugLabel ?? 'PaginationProvider',
+  );
+
+  final Map<int, FlexibleCompleter<PaginationPageResponse<T>>> _pageCompleters =
+      {};
 
   final Map<int, int> _pageUpdateCount = {};
 
-  Completer<void>? _frameCompleter;
+  final SafeExecutor _frameUpdater = SafeExecutor();
 
   bool _mustResetToZeroPage = false;
 
   bool _refreshing = false;
+
+  String? get debugLabel => null;
 
   bool get watchErrors => false;
 
@@ -74,15 +81,26 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   int get initialPage => 0;
 
-  Timer? _throttler;
+  final ThrottleExecutor _refreshExecutor = ThrottleExecutor();
+
+  Duration get throttleDuration => const Duration(milliseconds: 400);
 
   Future<PaginatedListResponse<T>> fetchItems(
     Z loadParams,
+    Y? arg,
     PaginationParams paginationParams,
   );
 
+  void log(Object object) {
+    _logger.log(object);
+  }
+
+  void updateState(PaginationState<T, Z, Y> paginationState) {
+    changeState(_valueTransformer(paginationState));
+  }
+
   void _onTotalCountChanged(int totalCount) {
-    changeState(
+    updateState(
       state.copyWith(
         totalCount: totalCount,
         pageItems: {},
@@ -91,12 +109,73 @@ mixin PaginationNotifierMixin<T, Z, Y>
     refresh();
   }
 
+  void reset({bool schedule = false}) {
+    _refreshExecutor.execute(
+      duration: schedule ? throttleDuration : Duration.zero,
+      onAction: () {
+        markResetToZero();
+        refresh();
+      },
+    );
+  }
+
   void refresh() {
     ref.invalidateSelf();
   }
 
-  void cancelAllLoads() {
+  void _closeScheduledTasks() {
+    _closeScheduledPageTasks();
+    _refreshExecutor.stop();
+    _frameUpdater.cancel();
+  }
+
+  void _closeScheduledPageTasks() {
     _pageCompleters.clear();
+  }
+
+  void previousPage() {
+    final previousPage = state.currentPage - 1;
+    final canExist = state.canPageExist(previousPage);
+    if (canExist) {
+      loadPage(previousPage);
+    }
+  }
+
+  void nextPage() {
+    final nextPage = state.currentPage + 1;
+    final canExist = state.canPageExist(nextPage);
+    if (canExist) {
+      loadPage(nextPage);
+    }
+  }
+
+  void changeLimit(int limit) {
+    if (limit <= 0) {
+      limit = 1;
+    }
+    if (limit != state.limit) {
+      changeState(
+        state.copyWith(
+          limit: limit,
+        ),
+      );
+      refresh();
+    }
+  }
+
+  void changeLoadParams(
+    Z Function(Z current) onChange, {
+    bool throttle = true,
+  }) {
+    final newParams = onChange(state.loadParams);
+    if (state.loadParams != newParams) {
+      updateState(
+        state.copyWith(
+          loadParams: newParams,
+        ),
+      );
+      reset(schedule: throttle);
+    }
   }
 
   PaginationRelativeIndex _getRelativeIndex(int index) {
@@ -111,34 +190,39 @@ mixin PaginationNotifierMixin<T, Z, Y>
     if (!hasState || _refreshing) {
       return;
     }
-    final completer = Completer();
-    _frameCompleter = completer;
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        if (_frameCompleter == completer) {
-          final relativeIndex = _getRelativeIndex(index);
-          final progress = relativeIndex.pageProgress;
-          final page = relativeIndex.page;
-          final needUpdateNext = progress - page > 0.5;
-          final needUpdatePrevious = page == 0 ? false : progress - page < 0.5;
-          final nextPage = state.canPageExist(page + 1) ? page + 1 : null;
-          final previousPage = state.canPageExist(page - 1) ? page - 1 : null;
-          if (needUpdateNext && nextPage != null) {
-            watchPage(nextPage);
-          }
-          watchPage(page);
-          if (needUpdatePrevious && previousPage != null) {
-            watchPage(previousPage);
-          }
-          if (page != state.currentPage) {
-            changeState(
-              state.copyWith(
-                currentPage: page,
-              ),
-            );
-          }
+    _frameUpdater.cancel();
+    _frameUpdater.perform(
+      () {
+        final relativeIndex = _getRelativeIndex(index);
+        final progress = relativeIndex.pageProgress;
+        final page = relativeIndex.page;
+        final needUpdateNext = progress - page > 0.5;
+        final needUpdatePrevious = page == 0 ? false : progress - page < 0.5;
+        final nextPage = state.canPageExist(page + 1) ? page + 1 : null;
+        final previousPage = state.canPageExist(page - 1) ? page - 1 : null;
+        if (needUpdateNext && nextPage != null) {
+          watchPage(nextPage);
+        }
+        watchPage(page);
+        if (needUpdatePrevious && previousPage != null) {
+          watchPage(previousPage);
+        }
+        if (page != state.currentPage) {
+          updateState(
+            state.copyWith(
+              currentPage: page,
+            ),
+          );
         }
       },
+    );
+  }
+
+  PaginationState<T, Z, Y> _valueTransformer(PaginationState<T, Z, Y> value) {
+    return value.copyWith(
+      items: PaginationState.fromPageItems(
+        {...value.pageItems},
+      ),
     );
   }
 
@@ -165,12 +249,13 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  Future<(int, List<T>)> loadCountItems({
+  Future<PaginatedListResponse<T>> loadCountItems({
     required PaginationParams paginationParams,
   }) async {
     final loadParams = readStateOrNull()?.loadParams ?? initialLoadParams;
-    final paginatedList = await fetchItems(loadParams, paginationParams);
-    return (paginatedList.totalCount, paginatedList.results);
+    final arg = readArgs();
+    final paginatedList = await fetchItems(loadParams, arg, paginationParams);
+    return paginatedList;
   }
 
   void markResetToZero() {
@@ -197,15 +282,15 @@ mixin PaginationNotifierMixin<T, Z, Y>
       }
 
       if (updateType == PaginationUpdateType.clearOthers) {
-        cancelAllLoads();
-        changeState(
+        _closeScheduledPageTasks();
+        updateState(
           oldState.copyWith(
             pageItems: const {},
           ),
         );
       }
 
-      changeState(
+      updateState(
         oldState.copyWith(
           currentPage: page,
         ),
@@ -217,6 +302,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
         page,
         updateType: updateType,
       );
+      if (response == null) {
+        return;
+      }
       final currentPageItems = {...state.pageItems};
       currentPageItems[page] = response.page;
       final totalCountChanged =
@@ -226,13 +314,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
       if (totalCountChanged) {
         _onTotalCountChanged(response.totalCount);
       } else {
-        changeState(
+        updateState(
           state.copyWith(
             totalCount: response.totalCount,
             pageItems: currentPageItems,
           ),
         );
-        log('page $page updated');
       }
     } catch (e) {
       switch (e) {
@@ -249,7 +336,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
                 error: e,
                 isLoading: false,
               );
-          changeState(
+          updateState(
             state.copyWith(
               pageItems: currentPageItems,
             ),
@@ -258,7 +345,17 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  Future<PaginationPageResponse<T>> _initiatePageLoading(
+  Future<void> _loadInitialPage(int? page) async {
+    if (autoStart || page != null) {
+      try {
+        await loadPage(page ?? initialPage);
+      } finally {
+        _refreshing = false;
+      }
+    }
+  }
+
+  Future<PaginationPageResponse<T>?> _initiatePageLoading(
     int page, {
     required PaginationUpdateType updateType,
   }) async {
@@ -266,12 +363,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     if (existCompleter != null && !existCompleter.isCompleted) {
       return existCompleter.future;
     } else {
-      final completer = Completer<PaginationPageResponse<T>>();
+      final completer = FlexibleCompleter<PaginationPageResponse<T>>();
 
-      void syncCancel() {
-        if (_pageCompleters[page] != completer) {
-          throw PaginationCancelException();
-        }
+      bool isSync() {
+        return completer.canPerformAction(_pageCompleters[page]);
       }
 
       try {
@@ -283,26 +378,30 @@ mixin PaginationNotifierMixin<T, Z, Y>
             page: page,
           ),
         );
+        if (isSync()) {
+          final updateCount = _getPageUpdateCount(page);
+          final pageState = PaginationPageState<T>(
+            isLoading: false,
+            items: countItems.results,
+            updateCount: updateCount,
+          );
 
-        syncCancel();
-        final updateCount = _getPageUpdateCount(page);
-        final pageState = PaginationPageState<T>(
-          isLoading: false,
-          items: countItems.$2,
-          updateCount: updateCount,
-        );
+          final pageResponse = PaginationPageResponse(
+            page: pageState,
+            totalCount: countItems.totalCount,
+          );
 
-        final pageResponse = PaginationPageResponse(
-          page: pageState,
-          totalCount: countItems.$1,
-        );
-
-        completer.complete(pageResponse);
-        return pageResponse;
+          completer.complete(pageResponse);
+          return pageResponse;
+        } else {
+          return null;
+        }
       } catch (e, stk) {
-        syncCancel();
-        completer.completeError(e, stk);
-        rethrow;
+        if (isSync()) {
+          completer.completeError(e, stk);
+          rethrow;
+        }
+        return null;
       }
     }
   }
@@ -315,18 +414,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _pageUpdateCount[page] = (_pageUpdateCount[page] ?? 0) + 1;
   }
 
-  void stopThrottler() {
-    _throttler?.cancel();
-    _throttler = null;
-  }
-
   @protected
   PaginationState<T, Z, Y> initiateBuild() {
     ref.onDispose(
       () {
-        stopThrottler();
-        _frameCompleter = null;
-        cancelAllLoads();
+        _closeScheduledTasks();
         _refreshing = true;
       },
     );
@@ -335,17 +427,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     var resetTimes = state?.resetTimes ?? 0;
     if (_mustResetToZeroPage) {
       _mustResetToZeroPage = false;
+      _pageUpdateCount.clear();
       resetTimes++;
     }
-
-    if (autoStart || page != null) {
-      loadPage(page ?? initialPage).whenComplete(
-        () {
-          _refreshing = false;
-        },
-      );
-    }
-
+    _loadInitialPage(page);
     return PaginationState(
       resetTimes: resetTimes,
       items: PaginationState.fromPageItems({}),
@@ -392,6 +477,7 @@ class ExamplePaginationNotifier
   @override
   Future<PaginatedListResponse<List<int>>> fetchItems(
     int loadParams,
+    Null arg,
     PaginationParams paginationParams,
   ) {
     throw UnimplementedError();
