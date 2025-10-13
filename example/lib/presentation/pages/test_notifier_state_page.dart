@@ -21,7 +21,7 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: testController.incremgient,
+        onPressed: testController.increment,
         child: Icon(Icons.add),
       ),
       body: Row(
@@ -36,7 +36,7 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
               },
               data: (state) {
                 final totalCount = state.totalCount;
-
+                
                 return ListView.separated(
                   itemBuilder: (context, index) {
                     final item = state.itemByIndex(index);
