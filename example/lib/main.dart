@@ -1,4 +1,4 @@
-import 'package:example/menu_page.dart';
+import 'package:example/presentation/pages/menu_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +12,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: MaterialApp(home: MenuPage(),),
+      child: MaterialApp(
+        home: MenuPage(),
+      ),
     );
   }
 }

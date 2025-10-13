@@ -37,7 +37,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     PaginationParams paginationParams,
   );
 
-  void log(Object object) {
+  void _log(Object object) {
     _logger.log(object);
   }
 
@@ -65,8 +65,13 @@ mixin PaginationNotifierMixin<T, Z, Y>
     );
   }
 
-  void refresh() {
-    ref.invalidateSelf();
+  void refresh({bool schedule = false}) {
+    _refreshExecutor.execute(
+      duration: schedule ? throttleDuration : Duration.zero,
+      onAction: () {
+        ref.invalidateSelf();
+      },
+    );
   }
 
   void _closeScheduledTasks() {
@@ -112,6 +117,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   void changeLoadParams(
     Z Function(Z current) onChange, {
     bool throttle = true,
+    bool resetState = true,
   }) {
     final newParams = onChange(state.loadParams);
     if (state.loadParams != newParams) {
@@ -120,7 +126,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
           loadParams: newParams,
         ),
       );
-      reset(schedule: throttle);
+      if (resetState) {
+        reset(schedule: throttle);
+      } else {
+        refresh(schedule: throttle);
+      }
     }
   }
 
@@ -266,6 +276,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
             pageItems: currentPageItems,
           ),
         );
+        _log('page updated: $page');
       }
     } catch (e) {
       switch (e) {

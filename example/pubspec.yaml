@@ -38,6 +38,7 @@ dependencies:
     path: ../
   riverpod: *riverpod_version
   flutter_riverpod: *riverpod_version
+  separated_row: ^3.0.4
   flutter_toolkit:
     git:
       url: https://github.com/oldHarvester/flutter_toolkit.git
