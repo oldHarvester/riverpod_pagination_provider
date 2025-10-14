@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_pagination_provider/src/models/error_stacktrace/error_stacktrace.dart';
 import 'package:riverpod_pagination_provider/src/models/paginated_list_response/paginated_list_response.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_state/pagination_state.dart';

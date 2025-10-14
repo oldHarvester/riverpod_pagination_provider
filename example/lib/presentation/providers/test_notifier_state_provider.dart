@@ -1,43 +1,58 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:equatable/equatable.dart';
 import 'package:example/data/test_datasource_service.dart';
 import 'package:flutter_toolkit/flutter_toolkit.dart';
+
 import 'package:riverpod_pagination_provider/riverpod_pagination_provider.dart';
 
 final testNotifierStateProvider =
     AutoDisposePaginationNotifierProvider<
       TestStatePaginationNotifier,
       String,
-      int
+      TestStatePaginationValue
     >(
       () {
         return TestStatePaginationNotifier();
       },
     );
 
-class TestStatePaginationNotifier
-    extends AutoDisposePaginationNotifier<String, int> {
-  late final CustomLogger logger = CustomLogger(owner: runtimeType.toString());
+class TestStatePaginationValue extends Equatable {
+  const TestStatePaginationValue({
+    required this.loadItems,
+  });
 
-  void increment() {
-    changeLoadParams(
-      throttle: false,
-      resetState: false,
-      (current) {
-        return current + 1;
-      },
+  final int loadItems;
+
+  TestStatePaginationValue copyWith({
+    int? loadItems,
+  }) {
+    return TestStatePaginationValue(
+      loadItems: loadItems ?? this.loadItems,
     );
   }
 
   @override
+  List<Object?> get props => [loadItems];
+}
+
+class TestStatePaginationNotifier
+    extends AutoDisposePaginationNotifier<String, TestStatePaginationValue> {
+  late final CustomLogger logger = CustomLogger(owner: runtimeType.toString());
+
+  @override
   Future<PaginatedListResponse<String>> fetchItems(
-    int loadParams,
+    TestStatePaginationValue loadParams,
     Null arg,
     PaginationParams paginationParams,
-  ) {
-    return TestDatasourceService.instance.fetchItems(paginationParams);
+  ) async {
+    return TestDatasourceService.instance.fetchItems(
+      paginationParams,
+      loadItems: loadParams.loadItems,
+    );
   }
 
   @override
-  PaginationState<String, int, Null> build() {
+  PaginationState<String, TestStatePaginationValue, Null> build() {
     ref.onDispose(
       () {
         logger.log('dispose');
@@ -53,5 +68,7 @@ class TestStatePaginationNotifier
   }
 
   @override
-  int get initialLoadParams => 0;
+  TestStatePaginationValue get initialLoadParams => TestStatePaginationValue(
+    loadItems: 100,
+  );
 }

@@ -1,5 +1,5 @@
-import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_pagination_provider/src/models/error_stacktrace/error_stacktrace.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
 import 'package:riverpod_pagination_provider/src/utils/pagination_helpers.dart';
 
@@ -25,6 +25,10 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required int initialPage,
     @Default(0) int currentPage,
     @Default(0) int resetTimes,
+    required bool initialLoading,
+    required bool initialLoaded,
+    required bool refreshing,
+    ErrorStackTrace? initialError,
   }) = _PaginationState<T, Z, Y>;
 
   static List<T> fromPageItems<T>(
@@ -118,12 +122,8 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     }
   }
 
-  bool get isInitialLoading => getPageState(initialPage).isLoading;
-
-  Object? get initialError => getPageState(initialPage).error;
-
   bool get isEmpty {
-    return !isInitialLoading && totalCount == 0;
+    return !initialLoaded && totalCount == 0;
   }
 
   bool get canShow {
@@ -145,13 +145,11 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required WhenValue Function(Object error, StackTrace stackTrace) error,
     required WhenValue Function(PaginationState<T, Z, Y> state) data,
   }) {
-    final initialPageState = getPageState(initialPage);
-    final isLoading = initialPageState.isLoading && totalCount == 0;
-    final pageError = initialPageState.error;
-    return isLoading
+    final errorStackTrace = initialError;
+    return initialLoading
         ? loading()
-        : pageError != null
-        ? error(error, StackTrace.current)
+        : errorStackTrace != null
+        ? error(errorStackTrace.error, errorStackTrace.stackTrace)
         : data(this);
   }
 }

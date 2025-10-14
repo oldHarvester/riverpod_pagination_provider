@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:example/utils/list_extension.dart';
 import 'package:riverpod_pagination_provider/riverpod_pagination_provider.dart';
 
@@ -6,25 +8,31 @@ final class TestDatasourceService {
 
   static TestDatasourceService instance = TestDatasourceService._();
 
-  final List<String> _items = List.generate(
-    100,
-    (index) {
-      return 'Hello World: $index';
-    },
-  );
+  List<String> _prepareItems(int length) {
+    return List.generate(
+      length,
+      (index) {
+        return 'Hello World: $index';
+      },
+    );
+  }
 
   Future<PaginatedListResponse<String>> fetchItems(
-    PaginationParams params,
-  ) async {
+    PaginationParams params, {
+    int loadItems = 100,
+    bool loadRandom = false,
+  }) async {
+    final randomItems = Random().nextInt(100) + 50;
     return Future.delayed(
       Duration(milliseconds: 200),
       () {
+        final items = _prepareItems(loadRandom ? randomItems : loadItems);
         return PaginatedListResponse(
-          results: _items.paginated(
+          results: items.paginated(
             limit: params.limit,
             offset: params.offset,
           ),
-          totalCount: _items.length,
+          totalCount: items.length,
         );
       },
     );

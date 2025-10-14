@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PaginationState<T,Z,Y> {
 
- Map<int, PaginationPageState<T>> get pageItems; List<T> get items; Z get loadParams; Y? get extraArgs; int get totalCount; int get limit; int get initialPage; int get currentPage; int get resetTimes;
+ Map<int, PaginationPageState<T>> get pageItems; List<T> get items; Z get loadParams; Y? get extraArgs; int get totalCount; int get limit; int get initialPage; int get currentPage; int get resetTimes; bool get initialLoading; bool get initialLoaded; bool get refreshing; ErrorStackTrace? get initialError;
 /// Create a copy of PaginationState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $PaginationStateCopyWith<T, Z, Y, PaginationState<T, Z, Y>> get copyWith => _$Pa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginationState<T, Z, Y>&&const DeepCollectionEquality().equals(other.pageItems, pageItems)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.loadParams, loadParams)&&const DeepCollectionEquality().equals(other.extraArgs, extraArgs)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.initialPage, initialPage) || other.initialPage == initialPage)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.resetTimes, resetTimes) || other.resetTimes == resetTimes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginationState<T, Z, Y>&&const DeepCollectionEquality().equals(other.pageItems, pageItems)&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.loadParams, loadParams)&&const DeepCollectionEquality().equals(other.extraArgs, extraArgs)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.initialPage, initialPage) || other.initialPage == initialPage)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.resetTimes, resetTimes) || other.resetTimes == resetTimes)&&(identical(other.initialLoading, initialLoading) || other.initialLoading == initialLoading)&&(identical(other.initialLoaded, initialLoaded) || other.initialLoaded == initialLoaded)&&(identical(other.refreshing, refreshing) || other.refreshing == refreshing)&&(identical(other.initialError, initialError) || other.initialError == initialError));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(pageItems),const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(loadParams),const DeepCollectionEquality().hash(extraArgs),totalCount,limit,initialPage,currentPage,resetTimes);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(pageItems),const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(loadParams),const DeepCollectionEquality().hash(extraArgs),totalCount,limit,initialPage,currentPage,resetTimes,initialLoading,initialLoaded,refreshing,initialError);
 
 @override
 String toString() {
-  return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes)';
+  return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes, initialLoading: $initialLoading, initialLoaded: $initialLoaded, refreshing: $refreshing, initialError: $initialError)';
 }
 
 
@@ -45,11 +45,11 @@ abstract mixin class $PaginationStateCopyWith<T,Z,Y,$Res>  {
   factory $PaginationStateCopyWith(PaginationState<T, Z, Y> value, $Res Function(PaginationState<T, Z, Y>) _then) = _$PaginationStateCopyWithImpl;
 @useResult
 $Res call({
- Map<int, PaginationPageState<T>> pageItems, List<T> items, Z loadParams, Y? extraArgs, int totalCount, int limit, int initialPage, int currentPage, int resetTimes
+ Map<int, PaginationPageState<T>> pageItems, List<T> items, Z loadParams, Y? extraArgs, int totalCount, int limit, int initialPage, int currentPage, int resetTimes, bool initialLoading, bool initialLoaded, bool refreshing, ErrorStackTrace? initialError
 });
 
 
-
+$ErrorStackTraceCopyWith<$Res>? get initialError;
 
 }
 /// @nodoc
@@ -62,7 +62,7 @@ class _$PaginationStateCopyWithImpl<T,Z,Y,$Res>
 
 /// Create a copy of PaginationState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? pageItems = null,Object? items = null,Object? loadParams = freezed,Object? extraArgs = freezed,Object? totalCount = null,Object? limit = null,Object? initialPage = null,Object? currentPage = null,Object? resetTimes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? pageItems = null,Object? items = null,Object? loadParams = freezed,Object? extraArgs = freezed,Object? totalCount = null,Object? limit = null,Object? initialPage = null,Object? currentPage = null,Object? resetTimes = null,Object? initialLoading = null,Object? initialLoaded = null,Object? refreshing = null,Object? initialError = freezed,}) {
   return _then(_self.copyWith(
 pageItems: null == pageItems ? _self.pageItems : pageItems // ignore: cast_nullable_to_non_nullable
 as Map<int, PaginationPageState<T>>,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
@@ -73,10 +73,26 @@ as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_no
 as int,initialPage: null == initialPage ? _self.initialPage : initialPage // ignore: cast_nullable_to_non_nullable
 as int,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,resetTimes: null == resetTimes ? _self.resetTimes : resetTimes // ignore: cast_nullable_to_non_nullable
-as int,
+as int,initialLoading: null == initialLoading ? _self.initialLoading : initialLoading // ignore: cast_nullable_to_non_nullable
+as bool,initialLoaded: null == initialLoaded ? _self.initialLoaded : initialLoaded // ignore: cast_nullable_to_non_nullable
+as bool,refreshing: null == refreshing ? _self.refreshing : refreshing // ignore: cast_nullable_to_non_nullable
+as bool,initialError: freezed == initialError ? _self.initialError : initialError // ignore: cast_nullable_to_non_nullable
+as ErrorStackTrace?,
   ));
 }
+/// Create a copy of PaginationState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ErrorStackTraceCopyWith<$Res>? get initialError {
+    if (_self.initialError == null) {
+    return null;
+  }
 
+  return $ErrorStackTraceCopyWith<$Res>(_self.initialError!, (value) {
+    return _then(_self.copyWith(initialError: value));
+  });
+}
 }
 
 
@@ -158,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<int, PaginationPageState<T>> pageItems,  List<T> items,  Z loadParams,  Y? extraArgs,  int totalCount,  int limit,  int initialPage,  int currentPage,  int resetTimes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<int, PaginationPageState<T>> pageItems,  List<T> items,  Z loadParams,  Y? extraArgs,  int totalCount,  int limit,  int initialPage,  int currentPage,  int resetTimes,  bool initialLoading,  bool initialLoaded,  bool refreshing,  ErrorStackTrace? initialError)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PaginationState() when $default != null:
-return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_that.totalCount,_that.limit,_that.initialPage,_that.currentPage,_that.resetTimes);case _:
+return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_that.totalCount,_that.limit,_that.initialPage,_that.currentPage,_that.resetTimes,_that.initialLoading,_that.initialLoaded,_that.refreshing,_that.initialError);case _:
   return orElse();
 
 }
@@ -179,10 +195,10 @@ return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<int, PaginationPageState<T>> pageItems,  List<T> items,  Z loadParams,  Y? extraArgs,  int totalCount,  int limit,  int initialPage,  int currentPage,  int resetTimes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<int, PaginationPageState<T>> pageItems,  List<T> items,  Z loadParams,  Y? extraArgs,  int totalCount,  int limit,  int initialPage,  int currentPage,  int resetTimes,  bool initialLoading,  bool initialLoaded,  bool refreshing,  ErrorStackTrace? initialError)  $default,) {final _that = this;
 switch (_that) {
 case _PaginationState():
-return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_that.totalCount,_that.limit,_that.initialPage,_that.currentPage,_that.resetTimes);case _:
+return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_that.totalCount,_that.limit,_that.initialPage,_that.currentPage,_that.resetTimes,_that.initialLoading,_that.initialLoaded,_that.refreshing,_that.initialError);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +215,10 @@ return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<int, PaginationPageState<T>> pageItems,  List<T> items,  Z loadParams,  Y? extraArgs,  int totalCount,  int limit,  int initialPage,  int currentPage,  int resetTimes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<int, PaginationPageState<T>> pageItems,  List<T> items,  Z loadParams,  Y? extraArgs,  int totalCount,  int limit,  int initialPage,  int currentPage,  int resetTimes,  bool initialLoading,  bool initialLoaded,  bool refreshing,  ErrorStackTrace? initialError)?  $default,) {final _that = this;
 switch (_that) {
 case _PaginationState() when $default != null:
-return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_that.totalCount,_that.limit,_that.initialPage,_that.currentPage,_that.resetTimes);case _:
+return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_that.totalCount,_that.limit,_that.initialPage,_that.currentPage,_that.resetTimes,_that.initialLoading,_that.initialLoaded,_that.refreshing,_that.initialError);case _:
   return null;
 
 }
@@ -214,7 +230,7 @@ return $default(_that.pageItems,_that.items,_that.loadParams,_that.extraArgs,_th
 
 
 class _PaginationState<T,Z,Y> extends PaginationState<T, Z, Y> {
-  const _PaginationState({required final  Map<int, PaginationPageState<T>> pageItems, required final  List<T> items, required this.loadParams, this.extraArgs, required this.totalCount, required this.limit, required this.initialPage, this.currentPage = 0, this.resetTimes = 0}): _pageItems = pageItems,_items = items,super._();
+  const _PaginationState({required final  Map<int, PaginationPageState<T>> pageItems, required final  List<T> items, required this.loadParams, this.extraArgs, required this.totalCount, required this.limit, required this.initialPage, this.currentPage = 0, this.resetTimes = 0, required this.initialLoading, required this.initialLoaded, required this.refreshing, this.initialError}): _pageItems = pageItems,_items = items,super._();
   
 
  final  Map<int, PaginationPageState<T>> _pageItems;
@@ -238,6 +254,10 @@ class _PaginationState<T,Z,Y> extends PaginationState<T, Z, Y> {
 @override final  int initialPage;
 @override@JsonKey() final  int currentPage;
 @override@JsonKey() final  int resetTimes;
+@override final  bool initialLoading;
+@override final  bool initialLoaded;
+@override final  bool refreshing;
+@override final  ErrorStackTrace? initialError;
 
 /// Create a copy of PaginationState
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +269,16 @@ _$PaginationStateCopyWith<T, Z, Y, _PaginationState<T, Z, Y>> get copyWith => __
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginationState<T, Z, Y>&&const DeepCollectionEquality().equals(other._pageItems, _pageItems)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other.loadParams, loadParams)&&const DeepCollectionEquality().equals(other.extraArgs, extraArgs)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.initialPage, initialPage) || other.initialPage == initialPage)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.resetTimes, resetTimes) || other.resetTimes == resetTimes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginationState<T, Z, Y>&&const DeepCollectionEquality().equals(other._pageItems, _pageItems)&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other.loadParams, loadParams)&&const DeepCollectionEquality().equals(other.extraArgs, extraArgs)&&(identical(other.totalCount, totalCount) || other.totalCount == totalCount)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.initialPage, initialPage) || other.initialPage == initialPage)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.resetTimes, resetTimes) || other.resetTimes == resetTimes)&&(identical(other.initialLoading, initialLoading) || other.initialLoading == initialLoading)&&(identical(other.initialLoaded, initialLoaded) || other.initialLoaded == initialLoaded)&&(identical(other.refreshing, refreshing) || other.refreshing == refreshing)&&(identical(other.initialError, initialError) || other.initialError == initialError));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_pageItems),const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(loadParams),const DeepCollectionEquality().hash(extraArgs),totalCount,limit,initialPage,currentPage,resetTimes);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_pageItems),const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(loadParams),const DeepCollectionEquality().hash(extraArgs),totalCount,limit,initialPage,currentPage,resetTimes,initialLoading,initialLoaded,refreshing,initialError);
 
 @override
 String toString() {
-  return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes)';
+  return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes, initialLoading: $initialLoading, initialLoaded: $initialLoaded, refreshing: $refreshing, initialError: $initialError)';
 }
 
 
@@ -269,11 +289,11 @@ abstract mixin class _$PaginationStateCopyWith<T,Z,Y,$Res> implements $Paginatio
   factory _$PaginationStateCopyWith(_PaginationState<T, Z, Y> value, $Res Function(_PaginationState<T, Z, Y>) _then) = __$PaginationStateCopyWithImpl;
 @override @useResult
 $Res call({
- Map<int, PaginationPageState<T>> pageItems, List<T> items, Z loadParams, Y? extraArgs, int totalCount, int limit, int initialPage, int currentPage, int resetTimes
+ Map<int, PaginationPageState<T>> pageItems, List<T> items, Z loadParams, Y? extraArgs, int totalCount, int limit, int initialPage, int currentPage, int resetTimes, bool initialLoading, bool initialLoaded, bool refreshing, ErrorStackTrace? initialError
 });
 
 
-
+@override $ErrorStackTraceCopyWith<$Res>? get initialError;
 
 }
 /// @nodoc
@@ -286,7 +306,7 @@ class __$PaginationStateCopyWithImpl<T,Z,Y,$Res>
 
 /// Create a copy of PaginationState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? pageItems = null,Object? items = null,Object? loadParams = freezed,Object? extraArgs = freezed,Object? totalCount = null,Object? limit = null,Object? initialPage = null,Object? currentPage = null,Object? resetTimes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? pageItems = null,Object? items = null,Object? loadParams = freezed,Object? extraArgs = freezed,Object? totalCount = null,Object? limit = null,Object? initialPage = null,Object? currentPage = null,Object? resetTimes = null,Object? initialLoading = null,Object? initialLoaded = null,Object? refreshing = null,Object? initialError = freezed,}) {
   return _then(_PaginationState<T, Z, Y>(
 pageItems: null == pageItems ? _self._pageItems : pageItems // ignore: cast_nullable_to_non_nullable
 as Map<int, PaginationPageState<T>>,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
@@ -297,11 +317,27 @@ as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_no
 as int,initialPage: null == initialPage ? _self.initialPage : initialPage // ignore: cast_nullable_to_non_nullable
 as int,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,resetTimes: null == resetTimes ? _self.resetTimes : resetTimes // ignore: cast_nullable_to_non_nullable
-as int,
+as int,initialLoading: null == initialLoading ? _self.initialLoading : initialLoading // ignore: cast_nullable_to_non_nullable
+as bool,initialLoaded: null == initialLoaded ? _self.initialLoaded : initialLoaded // ignore: cast_nullable_to_non_nullable
+as bool,refreshing: null == refreshing ? _self.refreshing : refreshing // ignore: cast_nullable_to_non_nullable
+as bool,initialError: freezed == initialError ? _self.initialError : initialError // ignore: cast_nullable_to_non_nullable
+as ErrorStackTrace?,
   ));
 }
 
+/// Create a copy of PaginationState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ErrorStackTraceCopyWith<$Res>? get initialError {
+    if (_self.initialError == null) {
+    return null;
+  }
 
+  return $ErrorStackTraceCopyWith<$Res>(_self.initialError!, (value) {
+    return _then(_self.copyWith(initialError: value));
+  });
+}
 }
 
 // dart format on

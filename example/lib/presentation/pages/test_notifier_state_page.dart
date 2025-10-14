@@ -28,6 +28,66 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
     );
   }
 
+  Widget buildChoices<T>({
+    String? title,
+    List<T> choices = const [],
+    void Function(T choice)? onSelect,
+  }) {
+    final padding = EdgeInsets.symmetric(horizontal: 16);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (title != null)
+          Padding(
+            padding: padding,
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+        SingleChildScrollView(
+          padding: padding,
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            spacing: 16,
+            children: List.generate(
+              choices.length,
+              (index) {
+                final choice = choices[index];
+                return Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    onTap: () {
+                      onSelect?.call(choice);
+                    },
+                    customBorder: CircleBorder(),
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        choice.toString(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final testState = ref.watch(testNotifierStateProvider);
@@ -35,52 +95,40 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
     final limit = testState.limit;
     final currentPage = testState.currentPage;
     const limitChoices = [1, 5, 8, 10, 15, 20];
+    final loadItemsChoices = [10, 20, 50, 100];
     const padding = EdgeInsets.symmetric(horizontal: 16);
+    final loadParams = testState.loadParams;
+    final loadItems = loadParams.loadItems;
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: testController.increment,
-        child: Icon(Icons.add),
+        onPressed: testController.refresh,
+        child: Icon(Icons.refresh),
       ),
       body: SafeArea(
         bottom: false,
         child: Column(
-          spacing: 16,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SingleChildScrollView(
-              padding: padding,
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                spacing: 16,
-                children: List.generate(
-                  limitChoices.length,
-                  (index) {
-                    final choice = limitChoices[index];
-                    return Material(
-                      type: MaterialType.transparency,
-                      child: InkWell(
-                        onTap: () {
-                          testController.changeLimit(choice);
-                        },
-                        customBorder: CircleBorder(),
-                        child: CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.red,
-                          child: Text(
-                            choice.toString(),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
+            buildChoices(
+              title: 'Limit choices',
+              choices: limitChoices,
+              onSelect: (choice) {
+                testController.changeLimit(choice);
+              },
+            ),
+            buildChoices(
+              title: 'Load items choices',
+              choices: loadItemsChoices,
+              onSelect: (choice) {
+                testController.changeLoadParams(
+                  resetState: false,
+                  (current) {
+                    return current.copyWith(
+                      loadItems: choice,
                     );
                   },
-                ),
-              ),
+                );
+              },
             ),
             Padding(
               padding: padding,
@@ -94,11 +142,26 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
                   ),
                   Expanded(
                     child: captionBuilder(
+                      title: 'Load items',
+                      caption: loadItems.toString(),
+                    ),
+                  ),
+                  Expanded(
+                    child: captionBuilder(
                       title: 'Limit',
                       caption: limit.toString(),
                     ),
                   ),
                 ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: Divider(
+                indent: 1,
+                endIndent: 1,
+                height: 1,
+                thickness: 1,
               ),
             ),
             Expanded(
@@ -107,7 +170,12 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
                   return LoadingPlaceholder();
                 },
                 error: (error, stackTrace) {
-                  return ErrorPlaceholder(error: error);
+                  return ErrorPlaceholder(
+                    error: error,
+                    onRefresh: () {
+                      ref.invalidate(testNotifierStateProvider);
+                    },
+                  );
                 },
                 data: (state) {
                   final totalCount = state.totalCount;
@@ -115,98 +183,102 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
                   final dividerHeight = 1.0;
                   final itemsPerPage = state.limit;
                   final totalPages = state.maxPages;
-                  return CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: EdgeInsets.all(16.0),
-                        sliver: SliverSafeArea(
-                          sliver: SliverStack(
-                            children: [
-                              SliverList.separated(
-                                itemBuilder: (context, index) {
-                                  final item = state.itemByIndex(index);
-                                  testController.onItemBuild(index);
-                                  return SizedBox(
-                                    height: itemHeight,
-                                    child: item == null
-                                        ? SizedBox.shrink()
-                                        : Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 16,
-                                              ),
-                                              child: Text(
-                                                item,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w500,
+                  final resetTimes = state.resetTimes;
+                  return KeyedSubtree(
+                    key: ValueKey(resetTimes),
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: EdgeInsets.all(16.0),
+                          sliver: SliverSafeArea(
+                            sliver: SliverStack(
+                              children: [
+                                SliverList.separated(
+                                  itemBuilder: (context, index) {
+                                    final item = state.itemByIndex(index);
+                                    testController.onItemBuild(index);
+                                    return SizedBox(
+                                      height: itemHeight,
+                                      child: item == null
+                                          ? SizedBox.shrink()
+                                          : Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                ),
+                                                child: Text(
+                                                  item,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                  );
-                                },
-                                separatorBuilder: (context, index) {
-                                  return Container(
-                                    height: dividerHeight,
-                                    color: Colors.grey,
-                                  );
-                                },
-                                itemCount: totalCount,
-                              ),
-                              SliverPositioned.fill(
-                                child: SingleChildScrollView(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Column(
-                                      children: List.generate(
-                                        totalPages,
-                                        (pageIndex) {
-                                          final pageHeight =
-                                              itemsPerPage *
-                                              (itemHeight + dividerHeight);
-                                          final borderSide = BorderSide(
-                                            color: Colors.red,
-                                            width: 10,
-                                          );
-                                          return Container(
-                                            height: pageHeight,
-                                            width: double.maxFinite,
-                                            decoration: BoxDecoration(
-                                              border: Border(
-                                                top: pageIndex == 0
-                                                    ? borderSide
-                                                    : BorderSide.none,
-                                                left: borderSide,
-                                                right: borderSide,
-                                                bottom: borderSide,
-                                              ),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                pageIndex.toString(),
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.black,
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) {
+                                    return Container(
+                                      height: dividerHeight,
+                                      color: Colors.grey,
+                                    );
+                                  },
+                                  itemCount: totalCount,
+                                ),
+                                SliverPositioned.fill(
+                                  child: SingleChildScrollView(
+                                    physics: NeverScrollableScrollPhysics(),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Column(
+                                        children: List.generate(
+                                          totalPages,
+                                          (pageIndex) {
+                                            final pageHeight =
+                                                itemsPerPage *
+                                                (itemHeight + dividerHeight);
+                                            final borderSide = BorderSide(
+                                              color: Colors.red,
+                                              width: 10,
+                                            );
+                                            return Container(
+                                              height: pageHeight,
+                                              width: double.maxFinite,
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  top: pageIndex == 0
+                                                      ? borderSide
+                                                      : BorderSide.none,
+                                                  left: borderSide,
+                                                  right: borderSide,
+                                                  bottom: borderSide,
                                                 ),
                                               ),
-                                            ),
-                                          );
-                                        },
+                                              child: Center(
+                                                child: Text(
+                                                  pageIndex.toString(),
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
