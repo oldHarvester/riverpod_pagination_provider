@@ -283,7 +283,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
     int page, {
     PaginationUpdateType updateType = PaginationUpdateType.autoUpdateCache,
   }) async {
-    final refreshCompleter = _refreshCompleter;
     final oldState = stateOrNull;
     if (oldState != null) {
       if (updateType == PaginationUpdateType.nonUpdateCache) {
@@ -295,7 +294,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       }
 
       if (updateType == PaginationUpdateType.clearOthers) {
-        _closeScheduledTasks();
+        _clearAndReset();
         updateState(
           oldState.copyWith(
             pageItems: const {},
@@ -304,6 +303,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       }
     }
 
+    final refreshCompleter = _refreshCompleter;
     try {
       final response = await _initiatePageLoading(
         page,
@@ -322,16 +322,15 @@ mixin PaginationNotifierMixin<T, Z, Y>
       if (totalCountChanged && !refreshing) {
         _onTotalCountChanged(response.totalCount);
       } else {
-        if (initialLoading &&
-            refreshCompleter.canPerformAction(_refreshCompleter)) {
-          _initialLoaded = true;
-        }
         updateState(
           state.copyWith(
             totalCount: response.totalCount,
             pageItems: currentPageItems,
           ),
         );
+        if (refreshCompleter.canPerformAction(_refreshCompleter)) {
+          _initialLoaded = true;
+        }
         _log('page updated: $page');
       }
     } catch (e, stk) {
