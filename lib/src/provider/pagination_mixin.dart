@@ -79,15 +79,16 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void _closeScheduledTasks() {
+    _pageCompleters.clear();
     _refreshCompleter.cancel();
-    _closeScheduledPageTasks();
     _visibleIndexes.clear();
     _refreshExecutor.stop();
     _frameUpdater.cancel();
   }
 
-  void _closeScheduledPageTasks() {
-    _pageCompleters.clear();
+  void _clearAndReset() {
+    _closeScheduledTasks();
+    _refreshCompleter = FlexibleCompleter();
   }
 
   void previousPage() {
@@ -205,10 +206,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         },
       );
     }
-    // for (final pageEntry in pagedIndexes.entries) {
-    //   final page = pageEntry.key;
-    //   watchPage(page);
-    // }
+
     final lastPage = pagedIndexes.entries.lastOrNull?.key;
     if (lastPage != null) {
       changeState(
@@ -244,15 +242,15 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
     final pageCompleter = _pageCompleters[page];
     final pageState = state.getPageState(page);
-    final hasError = pageState.error != null;
+    final hasError = pageState.hasError;
     if (pageCompleter == null || (pageCompleter.isCompleted && hasError)) {
       if (hasError) {
         if (watchErrors) {
-          loadPage(page);
+          unawaited(loadPage(page));
           return true;
         }
       } else {
-        loadPage(page);
+        unawaited(loadPage(page));
         return true;
       }
     }
@@ -266,8 +264,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
     final arg = readArgs();
     return Future.delayed(
       Duration.zero,
-      () async {
-        return await fetchItems(loadParams, arg, paginationParams);
+      () {
+        return fetchItems(loadParams, arg, paginationParams);
       },
     );
   }
@@ -291,13 +289,13 @@ mixin PaginationNotifierMixin<T, Z, Y>
       if (updateType == PaginationUpdateType.nonUpdateCache) {
         final pageState = oldState.pageItems[page];
 
-        if (pageState != null && pageState.error == null) {
+        if (pageState != null && !pageState.hasError) {
           return;
         }
       }
 
       if (updateType == PaginationUpdateType.clearOthers) {
-        _closeScheduledPageTasks();
+        _closeScheduledTasks();
         updateState(
           oldState.copyWith(
             pageItems: const {},
@@ -344,15 +342,15 @@ mixin PaginationNotifierMixin<T, Z, Y>
           final setInitialError = refreshCompleter.canPerformAction(
             _refreshCompleter,
           );
-
+          final errorStackTrace = ErrorStackTrace(error: e, stackTrace: stk);
           final currentPageItems = {...state.pageItems};
           currentPageItems[page] =
               currentPageItems[page]?.copyWith(
-                error: e,
+                errorStackTrace: errorStackTrace,
                 isLoading: false,
               ) ??
               PaginationPageState(
-                error: e,
+                errorStackTrace: errorStackTrace,
                 isLoading: false,
               );
           updateState(
@@ -371,7 +369,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         changeState(
           state.copyWith(
             initialLoading: initialLoading,
-            initialLoaded: _initialLoaded,
+            initialLoaded: initialLoaded,
             refreshing: refreshing,
           ),
         );
@@ -441,12 +439,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   @protected
   PaginationState<T, Z, Y> initiateBuild() {
-    ref.onDispose(
-      () {
-        _closeScheduledTasks();
-        _refreshCompleter = FlexibleCompleter();
-      },
-    );
+    ref.onDispose(_clearAndReset);
     final state = stateOrNull;
     final closestPage = _getMaxClosedPage();
     final resetToZero = _mustResetToZeroPage;

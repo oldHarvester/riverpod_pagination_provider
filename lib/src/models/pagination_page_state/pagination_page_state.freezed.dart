@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PaginationPageState<T> {
 
- List<T> get items; Object? get error; bool get isLoading; int get updateCount;
+ List<T> get items; ErrorStackTrace? get errorStackTrace; bool get isLoading; int get updateCount;
 /// Create a copy of PaginationPageState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $PaginationPageStateCopyWith<T, PaginationPageState<T>> get copyWith => _$Pagina
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginationPageState<T>&&const DeepCollectionEquality().equals(other.items, items)&&const DeepCollectionEquality().equals(other.error, error)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.updateCount, updateCount) || other.updateCount == updateCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginationPageState<T>&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.errorStackTrace, errorStackTrace) || other.errorStackTrace == errorStackTrace)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.updateCount, updateCount) || other.updateCount == updateCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),const DeepCollectionEquality().hash(error),isLoading,updateCount);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),errorStackTrace,isLoading,updateCount);
 
 @override
 String toString() {
-  return 'PaginationPageState<$T>(items: $items, error: $error, isLoading: $isLoading, updateCount: $updateCount)';
+  return 'PaginationPageState<$T>(items: $items, errorStackTrace: $errorStackTrace, isLoading: $isLoading, updateCount: $updateCount)';
 }
 
 
@@ -45,11 +45,11 @@ abstract mixin class $PaginationPageStateCopyWith<T,$Res>  {
   factory $PaginationPageStateCopyWith(PaginationPageState<T> value, $Res Function(PaginationPageState<T>) _then) = _$PaginationPageStateCopyWithImpl;
 @useResult
 $Res call({
- List<T> items, Object? error, bool isLoading, int updateCount
+ List<T> items, ErrorStackTrace? errorStackTrace, bool isLoading, int updateCount
 });
 
 
-
+$ErrorStackTraceCopyWith<$Res>? get errorStackTrace;
 
 }
 /// @nodoc
@@ -62,15 +62,28 @@ class _$PaginationPageStateCopyWithImpl<T,$Res>
 
 /// Create a copy of PaginationPageState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? error = freezed,Object? isLoading = null,Object? updateCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? errorStackTrace = freezed,Object? isLoading = null,Object? updateCount = null,}) {
   return _then(_self.copyWith(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as List<T>,error: freezed == error ? _self.error : error ,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as List<T>,errorStackTrace: freezed == errorStackTrace ? _self.errorStackTrace : errorStackTrace // ignore: cast_nullable_to_non_nullable
+as ErrorStackTrace?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,updateCount: null == updateCount ? _self.updateCount : updateCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
+/// Create a copy of PaginationPageState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ErrorStackTraceCopyWith<$Res>? get errorStackTrace {
+    if (_self.errorStackTrace == null) {
+    return null;
+  }
 
+  return $ErrorStackTraceCopyWith<$Res>(_self.errorStackTrace!, (value) {
+    return _then(_self.copyWith(errorStackTrace: value));
+  });
+}
 }
 
 
@@ -152,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<T> items,  Object? error,  bool isLoading,  int updateCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<T> items,  ErrorStackTrace? errorStackTrace,  bool isLoading,  int updateCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PaginationPageState() when $default != null:
-return $default(_that.items,_that.error,_that.isLoading,_that.updateCount);case _:
+return $default(_that.items,_that.errorStackTrace,_that.isLoading,_that.updateCount);case _:
   return orElse();
 
 }
@@ -173,10 +186,10 @@ return $default(_that.items,_that.error,_that.isLoading,_that.updateCount);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<T> items,  Object? error,  bool isLoading,  int updateCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<T> items,  ErrorStackTrace? errorStackTrace,  bool isLoading,  int updateCount)  $default,) {final _that = this;
 switch (_that) {
 case _PaginationPageState():
-return $default(_that.items,_that.error,_that.isLoading,_that.updateCount);case _:
+return $default(_that.items,_that.errorStackTrace,_that.isLoading,_that.updateCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +206,10 @@ return $default(_that.items,_that.error,_that.isLoading,_that.updateCount);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<T> items,  Object? error,  bool isLoading,  int updateCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<T> items,  ErrorStackTrace? errorStackTrace,  bool isLoading,  int updateCount)?  $default,) {final _that = this;
 switch (_that) {
 case _PaginationPageState() when $default != null:
-return $default(_that.items,_that.error,_that.isLoading,_that.updateCount);case _:
+return $default(_that.items,_that.errorStackTrace,_that.isLoading,_that.updateCount);case _:
   return null;
 
 }
@@ -208,7 +221,7 @@ return $default(_that.items,_that.error,_that.isLoading,_that.updateCount);case 
 
 
 class _PaginationPageState<T> extends PaginationPageState<T> {
-  const _PaginationPageState({final  List<T> items = const [], this.error, this.isLoading = true, this.updateCount = 0}): _items = items,super._();
+  const _PaginationPageState({final  List<T> items = const [], this.errorStackTrace, this.isLoading = true, this.updateCount = 0}): _items = items,super._();
   
 
  final  List<T> _items;
@@ -218,7 +231,7 @@ class _PaginationPageState<T> extends PaginationPageState<T> {
   return EqualUnmodifiableListView(_items);
 }
 
-@override final  Object? error;
+@override final  ErrorStackTrace? errorStackTrace;
 @override@JsonKey() final  bool isLoading;
 @override@JsonKey() final  int updateCount;
 
@@ -232,16 +245,16 @@ _$PaginationPageStateCopyWith<T, _PaginationPageState<T>> get copyWith => __$Pag
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginationPageState<T>&&const DeepCollectionEquality().equals(other._items, _items)&&const DeepCollectionEquality().equals(other.error, error)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.updateCount, updateCount) || other.updateCount == updateCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginationPageState<T>&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.errorStackTrace, errorStackTrace) || other.errorStackTrace == errorStackTrace)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.updateCount, updateCount) || other.updateCount == updateCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),const DeepCollectionEquality().hash(error),isLoading,updateCount);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),errorStackTrace,isLoading,updateCount);
 
 @override
 String toString() {
-  return 'PaginationPageState<$T>(items: $items, error: $error, isLoading: $isLoading, updateCount: $updateCount)';
+  return 'PaginationPageState<$T>(items: $items, errorStackTrace: $errorStackTrace, isLoading: $isLoading, updateCount: $updateCount)';
 }
 
 
@@ -252,11 +265,11 @@ abstract mixin class _$PaginationPageStateCopyWith<T,$Res> implements $Paginatio
   factory _$PaginationPageStateCopyWith(_PaginationPageState<T> value, $Res Function(_PaginationPageState<T>) _then) = __$PaginationPageStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<T> items, Object? error, bool isLoading, int updateCount
+ List<T> items, ErrorStackTrace? errorStackTrace, bool isLoading, int updateCount
 });
 
 
-
+@override $ErrorStackTraceCopyWith<$Res>? get errorStackTrace;
 
 }
 /// @nodoc
@@ -269,16 +282,29 @@ class __$PaginationPageStateCopyWithImpl<T,$Res>
 
 /// Create a copy of PaginationPageState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? error = freezed,Object? isLoading = null,Object? updateCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? errorStackTrace = freezed,Object? isLoading = null,Object? updateCount = null,}) {
   return _then(_PaginationPageState<T>(
 items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
-as List<T>,error: freezed == error ? _self.error : error ,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as List<T>,errorStackTrace: freezed == errorStackTrace ? _self.errorStackTrace : errorStackTrace // ignore: cast_nullable_to_non_nullable
+as ErrorStackTrace?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,updateCount: null == updateCount ? _self.updateCount : updateCount // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
 
+/// Create a copy of PaginationPageState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ErrorStackTraceCopyWith<$Res>? get errorStackTrace {
+    if (_self.errorStackTrace == null) {
+    return null;
+  }
 
+  return $ErrorStackTraceCopyWith<$Res>(_self.errorStackTrace!, (value) {
+    return _then(_self.copyWith(errorStackTrace: value));
+  });
+}
 }
 
 // dart format on

@@ -51,7 +51,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
 
     for (var i = start; i <= end; i++) {
       final pageState = pageItems[i];
-      if (pageState == null || pageState.error != null) {
+      if (pageState == null || pageState.hasError) {
         if (onlyOrdered) {
           break;
         }
@@ -101,7 +101,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     return 0;
   }
 
-  List<T> getAllOrderedItems() {
+  List<T> get orderedItems {
     return fromPageItems(pageItems, onlyOrdered: false);
   }
 
@@ -123,7 +123,13 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   bool get isEmpty {
-    return !initialLoaded && totalCount == 0;
+    return pageItems.isEmpty ||
+        !pageItems.values
+            .map(
+              (value) => value.isEmpty,
+            )
+            .toList()
+            .contains(true);
   }
 
   bool get canShow {
@@ -144,12 +150,32 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required WhenValue Function() loading,
     required WhenValue Function(Object error, StackTrace stackTrace) error,
     required WhenValue Function(PaginationState<T, Z, Y> state) data,
+    WhenValue Function(PaginationState<T, Z, Y> state)? empty,
   }) {
     final errorStackTrace = initialError;
+    final isEmpty = this.isEmpty;
     return initialLoading
         ? loading()
         : errorStackTrace != null
         ? error(errorStackTrace.error, errorStackTrace.stackTrace)
+        : isEmpty
+        ? empty?.call(this) ?? data(this)
         : data(this);
+  }
+
+  WhenValue? whenOrNull<WhenValue>({
+    WhenValue? Function()? loading,
+    WhenValue? Function(Object error, StackTrace stackTrace)? error,
+    WhenValue Function(PaginationState<T, Z, Y> state)? empty,
+    WhenValue? Function(PaginationState<T, Z, Y> state)? data,
+  }) {
+    final errorStackTrace = initialError;
+    return initialLoading
+        ? loading?.call()
+        : errorStackTrace != null
+        ? error?.call(errorStackTrace.error, errorStackTrace.stackTrace)
+        : isEmpty
+        ? empty?.call(this) ?? data?.call(this)
+        : data?.call(this);
   }
 }
