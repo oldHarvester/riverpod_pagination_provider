@@ -314,6 +314,23 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
 
     final refreshCompleter = _refreshCompleter;
+
+    void stopRefresh({bool success = false}) {
+      if (refreshCompleter.canPerformAction(_refreshCompleter)) {
+        refreshCompleter.complete();
+        if (success) {
+          _initialLoaded = true;
+        }
+        changeState(
+          state.copyWith(
+            initialLoading: initialLoading,
+            initialLoaded: initialLoaded,
+            refreshing: refreshing,
+          ),
+        );
+      }
+    }
+
     try {
       final response = await _initiatePageLoading(
         page,
@@ -338,9 +355,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
             pageItems: currentPageItems,
           ),
         );
-        if (refreshCompleter.canPerformAction(_refreshCompleter)) {
-          _initialLoaded = true;
-        }
+        stopRefresh(success: true);
         _log('page updated: $page');
       }
     } catch (e, stk) {
@@ -362,6 +377,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
                 errorStackTrace: errorStackTrace,
                 isLoading: false,
               );
+
           updateState(
             state.copyWith(
               pageItems: currentPageItems,
@@ -371,17 +387,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
                       : state.initialError,
             ),
           );
-      }
-    } finally {
-      if (refreshCompleter.canPerformAction(_refreshCompleter)) {
-        refreshCompleter.complete();
-        changeState(
-          state.copyWith(
-            initialLoading: initialLoading,
-            initialLoaded: initialLoaded,
-            refreshing: refreshing,
-          ),
-        );
+          stopRefresh();
       }
     }
   }
