@@ -143,29 +143,21 @@ mixin PaginationNotifierMixin<T, Z, Y>
     );
   }
 
-  // void _onIndexFetch(PaginationRelativeIndex relativeIndex) {
-  //   final progress = relativeIndex.pageProgress;
-  //   final page = relativeIndex.page;
-  //   final needUpdateNext = progress - page > 0.5;
-  //   final needUpdatePrevious = page == 0 ? false : progress - page < 0.5;
-  //   final nextPage = state.canPageExist(page + 1) ? page + 1 : null;
-  //   final previousPage = state.canPageExist(page - 1) ? page - 1 : null;
-  //   if (needUpdateNext && nextPage != null) {
-  //     watchPage(nextPage);
-  //   }
-  //   watchPage(page);
-  //   if (needUpdatePrevious && previousPage != null) {
-  //     watchPage(previousPage);
-  //   }
-  //   if (page != state.currentPage) {
-  //     _log('current page changed: $page');
-  //     updateState(
-  //       state.copyWith(
-  //         currentPage: page,
-  //       ),
-  //     );
-  //   }
-  // }
+  void _onIndexFetch(PaginationRelativeIndex relativeIndex) {
+    final progress = relativeIndex.pageProgress;
+    final page = relativeIndex.page;
+    final needUpdateNext = progress - page > 0.5;
+    final needUpdatePrevious = page == 0 ? false : progress - page < 0.5;
+    final nextPage = state.canPageExist(page + 1) ? page + 1 : null;
+    final previousPage = state.canPageExist(page - 1) ? page - 1 : null;
+    if (needUpdateNext && nextPage != null) {
+      watchPage(nextPage);
+    }
+    watchPage(page);
+    if (needUpdatePrevious && previousPage != null) {
+      watchPage(previousPage);
+    }
+  }
 
   final Set<int> _visibleIndexes = {};
 
@@ -187,6 +179,13 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   void _onVisibleIndexesChanges(Set<int> visible) {
     final sortedVisible = visible.toList()..sort();
+
+    for (final index in sortedVisible) {
+      _onIndexFetch(
+        _getRelativeIndex(index),
+      );
+    }
+
     final Map<int, List<PaginationRelativeIndex>> pagedIndexes = {};
 
     for (final index in sortedVisible) {
@@ -201,14 +200,15 @@ mixin PaginationNotifierMixin<T, Z, Y>
         },
       );
     }
-    for (final pageEntry in pagedIndexes.entries) {
-      final page = pageEntry.key;
-      watchPage(page);
-    }
-
-    final lastVisiblePage = pagedIndexes.entries.lastOrNull?.key;
-    if (lastVisiblePage != null && state.currentPage != lastVisiblePage) {
-      changeState(state.copyWith(currentPage: lastVisiblePage));
+    // for (final pageEntry in pagedIndexes.entries) {
+    //   final page = pageEntry.key;
+    //   watchPage(page);
+    // }
+    final lastPage = pagedIndexes.entries.lastOrNull?.key;
+    if (lastPage != null) {
+      changeState(
+        state.copyWith(currentPage: lastPage),
+      );
     }
   }
 
@@ -286,12 +286,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
           ),
         );
       }
-
-      updateState(
-        oldState.copyWith(
-          currentPage: page,
-        ),
-      );
     }
 
     try {

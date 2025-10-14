@@ -1,5 +1,8 @@
 extension ListExtension<T> on Iterable<T> {
-  List<T> paginated({int limit = 10, int offset = 0}) {
+  List<T> paginated({
+    required int limit,
+    required int offset,
+  }) {
     final items = toList();
     if (offset < 0) offset = 0;
     if (limit <= 0) return [];
