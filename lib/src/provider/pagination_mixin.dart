@@ -6,21 +6,37 @@ mixin PaginationNotifierMixin<T, Z, Y>
     owner: debugLabel ?? 'PaginationProvider',
   );
 
+  /// key is Page, value is fetch progress of this page
   final Map<int, FlexibleCompleter<PaginationPageResponse<T>>> _pageCompleters =
       {};
 
-  FlexibleCompleter _refreshCompleter = FlexibleCompleter();
-
+  /// Key is page, value is how many times page has been updated
   final Map<int, int> _pageUpdateCount = {};
 
+  /// Visible indexes during build
+  final Set<int> _visibleIndexes = {};
+
+  /// Controls the process of invalidating provider
+  FlexibleCompleter _refreshCompleter = FlexibleCompleter();
+
+  /// Collecting items during build
   final SafeExecutor _frameUpdater = SafeExecutor();
 
+  /// Helps with throttle refreshing provider
+  final ThrottleExecutor _refreshThrottler = ThrottleExecutor();
+
+  Duration get throttleDuration => const Duration(milliseconds: 400);
+
+  /// IF set this value to true invalidating provider leads to load from first page and also resetTimes will be updated
   bool _mustResetToZeroPage = false;
 
+  /// Debug label for logger
   String? get debugLabel => null;
 
+  /// IF set to true watchPage will reexecute process of fetching page if error occurs
   bool get watchErrors => false;
 
+  /// IF set to true provider will load initial page from start
   bool get autoStart => true;
 
   int get initialLimit => 10;
@@ -30,10 +46,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
   bool _initialLoaded = false;
 
   bool get initialLoaded => _initialLoaded;
-
-  final ThrottleExecutor _refreshExecutor = ThrottleExecutor();
-
-  Duration get throttleDuration => const Duration(milliseconds: 400);
 
   Future<PaginatedListResponse<T>> fetchItems(
     Z loadParams,
@@ -60,7 +72,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void reset({bool schedule = false}) {
-    _refreshExecutor.execute(
+    _refreshThrottler.execute(
       duration: schedule ? throttleDuration : Duration.zero,
       onAction: () {
         markResetToZero();
@@ -70,7 +82,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void refresh({bool schedule = false}) {
-    _refreshExecutor.execute(
+    _refreshThrottler.execute(
       duration: schedule ? throttleDuration : Duration.zero,
       onAction: () {
         ref.invalidateSelf();
@@ -82,7 +94,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _pageCompleters.clear();
     _refreshCompleter.cancel();
     _visibleIndexes.clear();
-    _refreshExecutor.stop();
+    _refreshThrottler.stop();
     _frameUpdater.cancel();
   }
 
@@ -165,8 +177,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  final Set<int> _visibleIndexes = {};
-
   void onItemBuild(int index) {
     final skip = !hasState || refreshing;
     if (skip) {
@@ -192,11 +202,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
       );
     }
 
-    final Map<int, List<PaginationRelativeIndex>> pagedIndexes = {};
+    final Map<int, List<PaginationRelativeIndex>> visiblePageIndexMap = {};
 
     for (final index in sortedVisible) {
       final relativeIndex = _getRelativeIndex(index);
-      pagedIndexes.update(
+      visiblePageIndexMap.update(
         relativeIndex.page,
         (value) {
           return [...value, relativeIndex];
@@ -207,7 +217,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       );
     }
 
-    final lastPage = pagedIndexes.entries.lastOrNull?.key;
+    final lastPage = visiblePageIndexMap.entries.lastOrNull?.key;
     if (lastPage != null) {
       changeState(
         state.copyWith(currentPage: lastPage),
