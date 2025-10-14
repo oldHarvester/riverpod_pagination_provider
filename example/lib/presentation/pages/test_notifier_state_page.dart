@@ -257,12 +257,15 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
                                                 ),
                                               ),
                                               child: Center(
-                                                child: Text(
-                                                  pageIndex.toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors.black,
+                                                child: Opacity(
+                                                  opacity: 0.2,
+                                                  child: Text(
+                                                    pageIndex.toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 40,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.black,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
