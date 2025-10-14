@@ -36,7 +36,6 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
               },
               data: (state) {
                 final totalCount = state.totalCount;
-                
                 return ListView.separated(
                   itemBuilder: (context, index) {
                     final item = state.itemByIndex(index);

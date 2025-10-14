@@ -24,7 +24,9 @@ abstract class AutoDisposePaginationFamilyNotifier<T, Z, Y>
 
   @override
   void changeState(PaginationState<T, Z, Y> newState) {
-    super.state = newState;
+    if (stateOrNull != newState) {
+      super.state = newState;
+    }
   }
 
   @override

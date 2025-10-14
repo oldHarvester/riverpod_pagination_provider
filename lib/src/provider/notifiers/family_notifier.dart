@@ -1,6 +1,5 @@
 part of '../pagination_provider.dart';
 
-
 typedef PaginationNotifierProviderFamily<
   NotifierT extends PaginationFamilyNotifier<T, Z, Y>,
   T,
@@ -25,7 +24,9 @@ abstract class PaginationFamilyNotifier<T, Z, Y>
 
   @override
   void changeState(PaginationState<T, Z, Y> newState) {
-    super.state = newState;
+    if (stateOrNull != newState) {
+      super.state = newState;
+    }
   }
 
   @override

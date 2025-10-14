@@ -76,6 +76,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   void _closeScheduledTasks() {
     _closeScheduledPageTasks();
+    _visibleIndexes.clear();
     _refreshExecutor.stop();
     _frameUpdater.cancel();
   }
@@ -142,36 +143,73 @@ mixin PaginationNotifierMixin<T, Z, Y>
     );
   }
 
+  // void _onIndexFetch(PaginationRelativeIndex relativeIndex) {
+  //   final progress = relativeIndex.pageProgress;
+  //   final page = relativeIndex.page;
+  //   final needUpdateNext = progress - page > 0.5;
+  //   final needUpdatePrevious = page == 0 ? false : progress - page < 0.5;
+  //   final nextPage = state.canPageExist(page + 1) ? page + 1 : null;
+  //   final previousPage = state.canPageExist(page - 1) ? page - 1 : null;
+  //   if (needUpdateNext && nextPage != null) {
+  //     watchPage(nextPage);
+  //   }
+  //   watchPage(page);
+  //   if (needUpdatePrevious && previousPage != null) {
+  //     watchPage(previousPage);
+  //   }
+  //   if (page != state.currentPage) {
+  //     _log('current page changed: $page');
+  //     updateState(
+  //       state.copyWith(
+  //         currentPage: page,
+  //       ),
+  //     );
+  //   }
+  // }
+
+  final Set<int> _visibleIndexes = {};
+
   void onItemBuild(int index) {
-    if (!hasState || _refreshing) {
+    final skip = !hasState || _refreshing;
+    if (skip) {
       return;
     }
+    _visibleIndexes.add(index);
     _frameUpdater.cancel();
     _frameUpdater.perform(
       () {
-        final relativeIndex = _getRelativeIndex(index);
-        final progress = relativeIndex.pageProgress;
-        final page = relativeIndex.page;
-        final needUpdateNext = progress - page > 0.5;
-        final needUpdatePrevious = page == 0 ? false : progress - page < 0.5;
-        final nextPage = state.canPageExist(page + 1) ? page + 1 : null;
-        final previousPage = state.canPageExist(page - 1) ? page - 1 : null;
-        if (needUpdateNext && nextPage != null) {
-          watchPage(nextPage);
-        }
-        watchPage(page);
-        if (needUpdatePrevious && previousPage != null) {
-          watchPage(previousPage);
-        }
-        if (page != state.currentPage) {
-          updateState(
-            state.copyWith(
-              currentPage: page,
-            ),
-          );
-        }
+        final visible = {..._visibleIndexes};
+        _visibleIndexes.clear();
+        _onVisibleIndexesChanges(visible);
       },
     );
+  }
+
+  void _onVisibleIndexesChanges(Set<int> visible) {
+    final sortedVisible = visible.toList()..sort();
+    final Map<int, List<PaginationRelativeIndex>> pagedIndexes = {};
+
+    for (final index in sortedVisible) {
+      final relativeIndex = _getRelativeIndex(index);
+      pagedIndexes.update(
+        relativeIndex.page,
+        (value) {
+          return [...value, relativeIndex];
+        },
+        ifAbsent: () {
+          return [relativeIndex];
+        },
+      );
+    }
+    for (final pageEntry in pagedIndexes.entries) {
+      final page = pageEntry.key;
+      watchPage(page);
+    }
+
+    final lastVisiblePage = pagedIndexes.entries.lastOrNull?.key;
+    if (lastVisiblePage != null && state.currentPage != lastVisiblePage) {
+      changeState(state.copyWith(currentPage: lastVisiblePage));
+    }
   }
 
   PaginationState<T, Z, Y> _valueTransformer(PaginationState<T, Z, Y> value) {
@@ -186,10 +224,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     return stateOrNull != null;
   }
 
-  void watchPage(int page) {
+  bool watchPage(int page) {
     final canExist = state.canPageExist(page);
     if (_refreshing || !hasState || !canExist) {
-      return;
+      return false;
     }
     final pageCompleter = _pageCompleters[page];
     final pageState = state.getPageState(page);
@@ -198,11 +236,14 @@ mixin PaginationNotifierMixin<T, Z, Y>
       if (hasError) {
         if (watchErrors) {
           loadPage(page);
+          return true;
         }
       } else {
         loadPage(page);
+        return true;
       }
     }
+    return false;
   }
 
   Future<PaginatedListResponse<T>> loadCountItems({
@@ -302,10 +343,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  Future<void> _loadInitialPage(int? page) async {
-    if (autoStart || page != null) {
+  Future<void> _loadInitialPage(int page) async {
+    if (autoStart) {
       try {
-        await loadPage(page ?? initialPage);
+        await loadPage(page);
       } finally {
         _refreshing = false;
       }
@@ -323,7 +364,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
       final completer = FlexibleCompleter<PaginationPageResponse<T>>();
 
       bool isSync() {
-        return completer.canPerformAction(_pageCompleters[page]);
+        final result = completer.canPerformAction(_pageCompleters[page]);
+        return result;
       }
 
       try {
@@ -380,22 +422,27 @@ mixin PaginationNotifierMixin<T, Z, Y>
       },
     );
     final state = stateOrNull;
-    final page = _mustResetToZeroPage ? 0 : _getMaxClosedPage();
+    final closestPage = _getMaxClosedPage();
+    final resetToZero = _mustResetToZeroPage;
+    final initPage = resetToZero ? 0 : closestPage ?? this.initialPage;
     var resetTimes = state?.resetTimes ?? 0;
-    if (_mustResetToZeroPage) {
+    if (resetToZero) {
       _mustResetToZeroPage = false;
       _pageUpdateCount.clear();
       resetTimes++;
     }
-    _loadInitialPage(page);
-    return PaginationState(
+
+    final newState = PaginationState<T, Z, Y>(
       resetTimes: resetTimes,
+      initialPage: initPage,
       items: PaginationState.fromPageItems({}),
-      currentPage: state?.currentPage ?? initialPage,
+      currentPage: initPage,
       limit: state?.limit ?? initialLimit,
       loadParams: state?.loadParams ?? initialLoadParams,
       totalCount: state?.totalCount ?? 0,
       pageItems: {},
     );
+    _loadInitialPage(initPage);
+    return newState;
   }
 }

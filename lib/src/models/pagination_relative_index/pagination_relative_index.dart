@@ -8,6 +8,7 @@ abstract class PaginationRelativeIndex with _$PaginationRelativeIndex {
     required int page,
     required double pageProgress,
     required double totalProgress,
-    required int index,
+    required int relativeIndex,
+    required int absoluteIndex,
   }) = _PaginationRelativeIndex;
 }

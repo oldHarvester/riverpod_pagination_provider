@@ -26,8 +26,9 @@ abstract class PaginationHelpers {
     return PaginationRelativeIndex(
       page: page,
       totalProgress: progress,
-      index: relativeIndex,
+      relativeIndex: relativeIndex,
       pageProgress: pageProgress,
+      absoluteIndex: index,
     );
   }
 }

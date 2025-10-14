@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
 import 'package:riverpod_pagination_provider/src/utils/pagination_helpers.dart';
@@ -21,6 +22,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     Y? extraArgs,
     required int totalCount,
     required int limit,
+    required int initialPage,
     @Default(0) int currentPage,
     @Default(0) int resetTimes,
   }) = _PaginationState<T, Z, Y>;
@@ -110,15 +112,15 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
         totalCount,
         limit,
       );
-      return pageItems[relativeIndex.page]?.items[relativeIndex.index];
+      return pageItems[relativeIndex.page]?.items[relativeIndex.relativeIndex];
     } catch (e) {
       return null;
     }
   }
 
-  bool get isInitialLoading => getPageState(0).isLoading;
+  bool get isInitialLoading => getPageState(initialPage).isLoading;
 
-  Object? get initialError => getPageState(0).error;
+  Object? get initialError => getPageState(initialPage).error;
 
   bool get isEmpty {
     return !isInitialLoading && totalCount == 0;
@@ -143,8 +145,8 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required WhenValue Function(Object error, StackTrace stackTrace) error,
     required WhenValue Function(PaginationState<T, Z, Y> state) data,
   }) {
-    final initialPageState = getPageState(0);
-    final isLoading = initialPageState.isLoading;
+    final initialPageState = getPageState(initialPage);
+    final isLoading = initialPageState.isLoading && totalCount == 0;
     final pageError = initialPageState.error;
     return isLoading
         ? loading()

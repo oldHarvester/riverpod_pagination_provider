@@ -19,7 +19,6 @@ abstract class PaginationNotifierHelper<T, Z, Y> {
   @protected
   Ref<PaginationState<T, Z, Y>> get ref => readRefence();
 
-  @protected
   PaginationState<T, Z, Y> get state => readState();
 
   @protected
