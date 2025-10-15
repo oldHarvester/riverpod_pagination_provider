@@ -16,6 +16,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   final Map<int, FlexibleCompleter<PaginationPageResponse<T>>> _pageCompleters =
       {};
 
+
   /// Key is page, value is how many times page has been updated
   final Map<int, int> _pageUpdateCount = {};
 
