@@ -1,5 +1,11 @@
 part of 'pagination_provider.dart';
 
+enum PaginationResetType {
+  refresh,
+  force,
+  none,
+}
+
 mixin PaginationNotifierMixin<T, Z, Y>
     implements PaginationNotifierHelper<T, Z, Y> {
   late final CustomLogger _logger = CustomLogger(
@@ -39,6 +45,14 @@ mixin PaginationNotifierMixin<T, Z, Y>
   /// IF set to true provider will load initial page from start
   bool get autoStart => true;
 
+  /// With this option its available to change page with loading processing
+  /// Default behavious is that u using onItemBuild and it will do it by its own
+  bool changePageOnLoadRequest = false;
+
+  /// Currently onItemBuild will obtain current page by index automatically
+  /// This is need load initial page from provider restart
+  bool changePageOnItemBuild = true;
+
   int get initialLimit => 10;
 
   int get initialPage => 0;
@@ -46,6 +60,13 @@ mixin PaginationNotifierMixin<T, Z, Y>
   bool _initialLoaded = false;
 
   bool get initialLoaded => _initialLoaded;
+
+  bool get useThrottler => true;
+
+  PaginationResetType get resetOnLoadParamsChanged => PaginationResetType.force;
+
+  PaginationPageUpdateType get pageUpdateType =>
+      PaginationPageUpdateType.autoUpdateCache;
 
   Future<PaginatedListResponse<T>> fetchItems(
     Z loadParams,
@@ -58,10 +79,16 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void updateState(PaginationState<T, Z, Y> paginationState) {
-    changeState(_valueTransformer(paginationState));
+    if (hasState) {
+      changeState(_valueTransformer(paginationState));
+    } else {
+      _log('update state skipped due to provider rebuilding');
+    }
   }
 
-  void _onTotalCountChanged(int totalCount) {
+  void _onTotalCountChanged(
+    int totalCount,
+  ) {
     updateState(
       state.copyWith(
         totalCount: totalCount,
@@ -103,23 +130,56 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _refreshCompleter = FlexibleCompleter();
   }
 
-  void previousPage() {
+  void previousPage({
+    bool? changePage,
+    PaginationPageUpdateType? updateType,
+  }) {
     final previousPage = state.currentPage - 1;
     final canExist = state.canPageExist(previousPage);
     if (canExist) {
-      loadPage(previousPage);
+      loadPage(
+        previousPage,
+        changePage: changePage,
+        updateType: updateType,
+      );
     }
   }
 
-  void nextPage() {
+  void nextPage({
+    bool? changePage,
+    PaginationPageUpdateType? updateType,
+  }) {
     final nextPage = state.currentPage + 1;
     final canExist = state.canPageExist(nextPage);
     if (canExist) {
-      loadPage(nextPage);
+      loadPage(
+        nextPage,
+        changePage: changePage,
+        updateType: pageUpdateType,
+      );
     }
   }
 
-  void changeLimit(int limit) {
+  void resetByType({
+    required PaginationResetType resetType,
+    required bool throttle,
+  }) {
+    switch (resetType) {
+      case PaginationResetType.force:
+        reset(schedule: throttle);
+      case PaginationResetType.refresh:
+        refresh(schedule: throttle);
+      case PaginationResetType.none:
+        break;
+    }
+  }
+
+  void changeLimit(
+    int limit, {
+    bool? throttle,
+    PaginationResetType resetType = PaginationResetType.refresh,
+  }) {
+    final useThrottler = throttle ?? this.useThrottler;
     if (limit <= 0) {
       limit = 1;
     }
@@ -129,15 +189,21 @@ mixin PaginationNotifierMixin<T, Z, Y>
           limit: limit,
         ),
       );
-      refresh();
+
+      resetByType(
+        resetType: resetType,
+        throttle: useThrottler,
+      );
     }
   }
 
   void changeLoadParams(
     Z Function(Z current) onChange, {
-    bool throttle = true,
-    bool resetState = true,
+    bool? throttle,
+    PaginationResetType? resetType,
   }) {
+    final useThrottler = throttle ?? this.useThrottler;
+    final reset = resetType ?? resetOnLoadParamsChanged;
     final newParams = onChange(state.loadParams);
     if (state.loadParams != newParams) {
       updateState(
@@ -145,11 +211,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
           loadParams: newParams,
         ),
       );
-      if (resetState) {
-        reset(schedule: throttle);
-      } else {
-        refresh(schedule: throttle);
-      }
+      resetByType(
+        resetType: reset,
+        throttle: useThrottler,
+      );
     }
   }
 
@@ -289,21 +354,31 @@ mixin PaginationNotifierMixin<T, Z, Y>
     return state?.maxFrom(state.currentPage);
   }
 
+  void _changePage(int page) {
+    updateState(state.copyWith(currentPage: page));
+  }
+
   Future<void> loadPage(
     int page, {
-    PaginationUpdateType updateType = PaginationUpdateType.autoUpdateCache,
+    bool? changePage,
+    PaginationPageUpdateType? updateType,
   }) async {
+    final pageUpdateType = updateType ?? this.pageUpdateType;
     final oldState = stateOrNull;
     if (oldState != null) {
-      if (updateType == PaginationUpdateType.nonUpdateCache) {
+      if (updateType == PaginationPageUpdateType.nonUpdateCache) {
         final pageState = oldState.pageItems[page];
 
         if (pageState != null && !pageState.hasError) {
           return;
         }
       }
+      final autoChangePage = changePage ?? changePageOnLoadRequest;
+      if (autoChangePage) {
+        _changePage(page);
+      }
 
-      if (updateType == PaginationUpdateType.clearOthers) {
+      if (updateType == PaginationPageUpdateType.clearOthers) {
         _clearAndReset();
         updateState(
           oldState.copyWith(
@@ -334,7 +409,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     try {
       final response = await _initiatePageLoading(
         page,
-        updateType: updateType,
+        updateType: pageUpdateType,
       );
       if (response == null) {
         return;
@@ -394,7 +469,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   Future<PaginationPageResponse<T>?> _initiatePageLoading(
     int page, {
-    required PaginationUpdateType updateType,
+    required PaginationPageUpdateType updateType,
   }) async {
     final existCompleter = _pageCompleters[page];
     if (existCompleter != null && !existCompleter.isCompleted) {

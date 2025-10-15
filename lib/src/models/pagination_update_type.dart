@@ -1,4 +1,4 @@
-enum PaginationUpdateType {
+enum PaginationPageUpdateType {
   /// При смене страницы старые страницы очищаются
   clearOthers,
 

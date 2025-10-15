@@ -1,6 +1,7 @@
 import 'package:example/presentation/providers/test_notifier_state_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_pagination_provider/riverpod_pagination_provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 
 import '../widgets/error_placeholder.dart';
@@ -121,7 +122,7 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
               choices: loadItemsChoices,
               onSelect: (choice) {
                 testController.changeLoadParams(
-                  resetState: false,
+                  resetType: PaginationResetType.refresh,
                   (current) {
                     return current.copyWith(
                       loadItems: choice,
@@ -263,7 +264,8 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
                                                     pageIndex.toString(),
                                                     style: TextStyle(
                                                       fontSize: 40,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                       color: Colors.black,
                                                     ),
                                                   ),
