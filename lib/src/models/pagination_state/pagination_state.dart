@@ -152,6 +152,31 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     );
   }
 
+  ListenValue listen<ListenValue>(
+    ListenValue Function(
+      bool isLoading,
+      ErrorStackTrace? errorStacktrace,
+      PaginationState<T, Z, Y> data,
+    )
+    callback,
+  ) {
+    return when(
+      loading: () {
+        return callback(true, null, this);
+      },
+      error: (error, stackTrace) {
+        return callback(
+          false,
+          ErrorStackTrace(error: error, stackTrace: stackTrace),
+          this,
+        );
+      },
+      data: (state) {
+        return callback(false, null, this);
+      },
+    );
+  }
+
   WhenValue when<WhenValue>({
     required WhenValue Function() loading,
     required WhenValue Function(Object error, StackTrace stackTrace) error,
