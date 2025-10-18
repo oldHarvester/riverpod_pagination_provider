@@ -1,4 +1,5 @@
 import 'package:example/presentation/providers/test_notifier_state_provider.dart';
+import 'package:example/presentation/widgets/text_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_pagination_provider/riverpod_pagination_provider.dart';
@@ -202,21 +203,9 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
                                       height: itemHeight,
                                       child: item == null
                                           ? SizedBox.shrink()
-                                          : Align(
-                                              alignment: Alignment.centerLeft,
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                ),
-                                                child: Text(
-                                                  item,
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    color: Colors.black,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
+                                          : TextTile(
+                                              text: item,
+                                              height: itemHeight,
                                             ),
                                     );
                                   },

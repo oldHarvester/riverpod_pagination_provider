@@ -31,14 +31,12 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     ErrorStackTrace? initialError,
   }) = _PaginationState<T, Z, Y>;
 
-  static List<T> fromPageItems<T>(
-    Map<int, PaginationPageState<T>> pageItems, {
+  static List<T> extractItems<T>(
+    PaginationState<T, dynamic, dynamic> state, {
     bool onlyOrdered = true,
   }) {
-    final pages =
-        pageItems.keys.toList()..sort(
-          (a, b) => a.compareTo(b),
-        );
+    final pageItems = {...state.pageItems};
+    final pages = state.loadedPages;
     if (pages.isEmpty) {
       return [];
     } else if (pageItems.length == 1) {
@@ -69,6 +67,14 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
       temp += entry.value.items.length;
     }
     return temp;
+  }
+
+  Set<int> get loadedPages {
+    final temp =
+        pageItems.keys.toList()..sort(
+          (a, b) => a.compareTo(b),
+        );
+    return temp.toSet();
   }
 
   List<int> get pages {
@@ -102,7 +108,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   List<T> get orderedItems {
-    return fromPageItems(pageItems, onlyOrdered: false);
+    return extractItems(this, onlyOrdered: false);
   }
 
   PaginationPageState<T> getPageState(int page) {

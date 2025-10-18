@@ -1,6 +1,7 @@
 import 'package:example/presentation/pages/test_family_notifier_page.dart';
 import 'package:example/presentation/pages/test_notifier_page.dart';
 import 'package:example/presentation/pages/test_notifier_state_page.dart';
+import 'package:example/presentation/pages/without_builder_page.dart';
 import 'package:example/utils/context_extension.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +35,12 @@ class MenuPage extends StatelessWidget {
                 context.push(child: TestNotifierStatePage());
               },
               child: Text('Test Notifier State Page'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.push(child: WithoutBuilderPage());
+              },
+              child: Text('Test Without builder'),
             ),
           ],
         ),

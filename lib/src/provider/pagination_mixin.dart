@@ -16,7 +16,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
   final Map<int, FlexibleCompleter<PaginationPageResponse<T>>> _pageCompleters =
       {};
 
-
   /// Key is page, value is how many times page has been updated
   final Map<int, int> _pageUpdateCount = {};
 
@@ -131,23 +130,40 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _refreshCompleter = FlexibleCompleter();
   }
 
-  void previousPage({
-    bool? changePage,
+  bool loadNext() {
+    final pages = state.loadedPages;
+    final lastPage = pages.lastOrNull;
+    if (lastPage == null) {
+      return false;
+    }
+    final nextPage = lastPage + 1;
+    if (state.canPageExist(nextPage)) {
+      loadPage(nextPage);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool switchPreviousPage({
     PaginationPageUpdateType? updateType,
   }) {
     final previousPage = state.currentPage - 1;
     final canExist = state.canPageExist(previousPage);
+
     if (canExist) {
       loadPage(
         previousPage,
-        changePage: changePage,
+        changePage: true,
         updateType: updateType,
       );
+      return true;
+    } else {
+      return false;
     }
   }
 
-  void nextPage({
-    bool? changePage,
+  bool switchNextPage({
     PaginationPageUpdateType? updateType,
   }) {
     final nextPage = state.currentPage + 1;
@@ -155,9 +171,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
     if (canExist) {
       loadPage(
         nextPage,
-        changePage: changePage,
+        changePage: true,
         updateType: pageUpdateType,
       );
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -293,9 +312,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   PaginationState<T, Z, Y> _valueTransformer(PaginationState<T, Z, Y> value) {
     return value.copyWith(
-      items: PaginationState.fromPageItems(
-        {...value.pageItems},
-      ),
+      items: PaginationState.extractItems(value),
     );
   }
 
@@ -548,7 +565,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       initialLoading: initialLoading,
       resetTimes: resetTimes,
       initialPage: initPage,
-      items: PaginationState.fromPageItems({}),
+      items: [],
       currentPage: initPage,
       limit: state?.limit ?? initialLimit,
       loadParams: state?.loadParams ?? initialLoadParams,
