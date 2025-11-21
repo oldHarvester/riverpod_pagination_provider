@@ -79,7 +79,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
       if (!stopAddingItems && item != null) {
         items.add(item);
       }
-      print('add: $item, to: $i');
+      print('add: ${item == null}, to: $i');
       mixedTemp.add(item);
     }
 
