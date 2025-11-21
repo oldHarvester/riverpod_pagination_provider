@@ -129,13 +129,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   bool get isEmpty {
-    return pageItems.isEmpty ||
-        !pageItems.values
-            .map(
-              (value) => value.isEmpty,
-            )
-            .toList()
-            .contains(true);
+    return pageItems.isEmpty || items.isEmpty;
   }
 
   bool get canShow {
