@@ -270,6 +270,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _visibleIndexes.add(index);
     _frameUpdater.cancel();
     _frameUpdater.perform(
+      type: SafeExecutorType.zeroDelayed,
       () {
         final visible = {..._visibleIndexes};
         _visibleIndexes.clear();
