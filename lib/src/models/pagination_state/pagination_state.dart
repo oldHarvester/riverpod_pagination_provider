@@ -66,16 +66,15 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     final mixedTemp = <T?>[];
     bool stopAddingItems = false;
     final totalCount = state.totalCount;
+    print('extract items total_count: $totalCount');
     if (totalCount == 0) {
       return (items: [], mixedItems: []);
     }
 
     for (var i = 0; i < totalCount; i++) {
       final item = state.itemByIndex(i);
-      if (item == null) {
-        if (onlyOrdered) {
-          stopAddingItems = true;
-        }
+      if (item == null && onlyOrdered && !stopAddingItems) {
+        stopAddingItems = true;
       }
       if (!stopAddingItems && item != null) {
         items.add(item);
