@@ -66,7 +66,6 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     final mixedTemp = <T?>[];
     bool stopAddingItems = false;
     final totalCount = state.totalCount;
-    print('extract items total_count: $totalCount');
     if (totalCount == 0) {
       return (items: [], mixedItems: []);
     }
@@ -79,7 +78,6 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
       if (!stopAddingItems && item != null) {
         items.add(item);
       }
-      print('add: ${item == null}, to: $i');
       mixedTemp.add(item);
     }
 

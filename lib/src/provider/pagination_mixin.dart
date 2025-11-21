@@ -561,19 +561,21 @@ mixin PaginationNotifierMixin<T, Z, Y>
       resetTimes++;
     }
 
-    final newState = PaginationState<T, Z, Y>(
-      initialLoaded: initialLoaded,
-      refreshing: refreshing,
-      initialLoading: initialLoading,
-      resetTimes: resetTimes,
-      initialPage: initPage,
-      items: [],
-      mixedItems: [],
-      currentPage: initPage,
-      limit: state?.limit ?? initialLimit,
-      loadParams: state?.loadParams ?? initialLoadParams,
-      totalCount: state?.totalCount ?? 0,
-      pageItems: {},
+    final newState = _valueTransformer(
+      PaginationState<T, Z, Y>(
+        initialLoaded: initialLoaded,
+        refreshing: refreshing,
+        initialLoading: initialLoading,
+        resetTimes: resetTimes,
+        initialPage: initPage,
+        items: [],
+        mixedItems: [],
+        currentPage: initPage,
+        limit: state?.limit ?? initialLimit,
+        loadParams: state?.loadParams ?? initialLoadParams,
+        totalCount: state?.totalCount ?? 0,
+        pageItems: {},
+      ),
     );
     if (autoStart) {
       loadPage(initPage);
