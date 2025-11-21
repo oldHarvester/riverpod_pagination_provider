@@ -20,6 +20,7 @@ mixin _$PaginationState<T, Z, Y> {
   Map<int, PaginationPageState<T>> get pageItems =>
       throw _privateConstructorUsedError;
   List<T> get items => throw _privateConstructorUsedError;
+  List<T?> get mixedItems => throw _privateConstructorUsedError;
   Z get loadParams => throw _privateConstructorUsedError;
   Y? get extraArgs => throw _privateConstructorUsedError;
   int get totalCount => throw _privateConstructorUsedError;
@@ -49,6 +50,7 @@ abstract class $PaginationStateCopyWith<T, Z, Y, $Res> {
   $Res call({
     Map<int, PaginationPageState<T>> pageItems,
     List<T> items,
+    List<T?> mixedItems,
     Z loadParams,
     Y? extraArgs,
     int totalCount,
@@ -88,6 +90,7 @@ class _$PaginationStateCopyWithImpl<
   $Res call({
     Object? pageItems = null,
     Object? items = null,
+    Object? mixedItems = null,
     Object? loadParams = freezed,
     Object? extraArgs = freezed,
     Object? totalCount = null,
@@ -112,6 +115,11 @@ class _$PaginationStateCopyWithImpl<
                     ? _value.items
                     : items // ignore: cast_nullable_to_non_nullable
                         as List<T>,
+            mixedItems:
+                null == mixedItems
+                    ? _value.mixedItems
+                    : mixedItems // ignore: cast_nullable_to_non_nullable
+                        as List<T?>,
             loadParams:
                 freezed == loadParams
                     ? _value.loadParams
@@ -199,6 +207,7 @@ abstract class _$$PaginationStateImplCopyWith<T, Z, Y, $Res>
   $Res call({
     Map<int, PaginationPageState<T>> pageItems,
     List<T> items,
+    List<T?> mixedItems,
     Z loadParams,
     Y? extraArgs,
     int totalCount,
@@ -239,6 +248,7 @@ class __$$PaginationStateImplCopyWithImpl<T, Z, Y, $Res>
   $Res call({
     Object? pageItems = null,
     Object? items = null,
+    Object? mixedItems = null,
     Object? loadParams = freezed,
     Object? extraArgs = freezed,
     Object? totalCount = null,
@@ -263,6 +273,11 @@ class __$$PaginationStateImplCopyWithImpl<T, Z, Y, $Res>
                 ? _value._items
                 : items // ignore: cast_nullable_to_non_nullable
                     as List<T>,
+        mixedItems:
+            null == mixedItems
+                ? _value._mixedItems
+                : mixedItems // ignore: cast_nullable_to_non_nullable
+                    as List<T?>,
         loadParams:
             freezed == loadParams
                 ? _value.loadParams
@@ -329,6 +344,7 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
   const _$PaginationStateImpl({
     required final Map<int, PaginationPageState<T>> pageItems,
     required final List<T> items,
+    required final List<T?> mixedItems,
     required this.loadParams,
     this.extraArgs,
     required this.totalCount,
@@ -342,6 +358,7 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
     this.initialError,
   }) : _pageItems = pageItems,
        _items = items,
+       _mixedItems = mixedItems,
        super._();
 
   final Map<int, PaginationPageState<T>> _pageItems;
@@ -358,6 +375,14 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
     if (_items is EqualUnmodifiableListView) return _items;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_items);
+  }
+
+  final List<T?> _mixedItems;
+  @override
+  List<T?> get mixedItems {
+    if (_mixedItems is EqualUnmodifiableListView) return _mixedItems;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mixedItems);
   }
 
   @override
@@ -387,7 +412,7 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
 
   @override
   String toString() {
-    return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes, initialLoading: $initialLoading, initialLoaded: $initialLoaded, refreshing: $refreshing, initialError: $initialError)';
+    return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, mixedItems: $mixedItems, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes, initialLoading: $initialLoading, initialLoaded: $initialLoaded, refreshing: $refreshing, initialError: $initialError)';
   }
 
   @override
@@ -400,6 +425,10 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
               _pageItems,
             ) &&
             const DeepCollectionEquality().equals(other._items, _items) &&
+            const DeepCollectionEquality().equals(
+              other._mixedItems,
+              _mixedItems,
+            ) &&
             const DeepCollectionEquality().equals(
               other.loadParams,
               loadParams,
@@ -429,6 +458,7 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
     runtimeType,
     const DeepCollectionEquality().hash(_pageItems),
     const DeepCollectionEquality().hash(_items),
+    const DeepCollectionEquality().hash(_mixedItems),
     const DeepCollectionEquality().hash(loadParams),
     const DeepCollectionEquality().hash(extraArgs),
     totalCount,
@@ -460,6 +490,7 @@ abstract class _PaginationState<T, Z, Y> extends PaginationState<T, Z, Y> {
   const factory _PaginationState({
     required final Map<int, PaginationPageState<T>> pageItems,
     required final List<T> items,
+    required final List<T?> mixedItems,
     required final Z loadParams,
     final Y? extraArgs,
     required final int totalCount,
@@ -478,6 +509,8 @@ abstract class _PaginationState<T, Z, Y> extends PaginationState<T, Z, Y> {
   Map<int, PaginationPageState<T>> get pageItems;
   @override
   List<T> get items;
+  @override
+  List<T?> get mixedItems;
   @override
   Z get loadParams;
   @override

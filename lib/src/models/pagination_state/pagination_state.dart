@@ -18,6 +18,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   const factory PaginationState({
     required Map<int, PaginationPageState<T>> pageItems,
     required List<T> items,
+    required List<T?> mixedItems,
     required Z loadParams,
     Y? extraArgs,
     required int totalCount,
@@ -31,34 +32,57 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     ErrorStackTrace? initialError,
   }) = _PaginationState<T, Z, Y>;
 
-  static List<T> extractItems<T>(
+  static ({List<T> items, List<T?> mixedItems}) extractItems<T>(
     PaginationState<T, dynamic, dynamic> state, {
     bool onlyOrdered = true,
   }) {
     final pageItems = {...state.pageItems};
     final pages = state.loadedPages;
+    final emptyResult = (items: <T>[], mixedItems: <T>[]);
     if (pages.isEmpty) {
-      return [];
+      return emptyResult;
     } else if (pageItems.length == 1) {
-      return [...pageItems[pages.first]!.items];
+      final firstPageItems = pageItems[pages.first]!.items;
+      return (items: [...firstPageItems], mixedItems: [...firstPageItems]);
     }
 
-    final temp = <T>[];
-    final start = pages.first;
-    final end = pages.last;
+    final items = <T>[];
+    final mixedTemp = <T?>[];
+    bool stopAddingItems = false;
+    // TODO: This way is faster but need to find a way to work with mixed items
+    // final start = pages.first;
+    // final end = pages.last;
+    // for (var i = start; i <= end; i++) {
+    //   final pageState = pageItems[i];
+    //   if (pageState == null || pageState.hasError) {
+    //     if (onlyOrdered) {
+    //       stopAddingItems = true;
+    //     }
+    //   } else {
+    //     if (!stopAddingItems) {
+    //       items.addAll([...pageState.items]);
+    //     }
+    //   }
+    // }
+    final totalCount = state.totalCount;
+    if (totalCount == 0) {
+      return emptyResult;
+    }
 
-    for (var i = start; i <= end; i++) {
-      final pageState = pageItems[i];
-      if (pageState == null || pageState.hasError) {
+    for (var i = 0; i < totalCount; i++) {
+      final item = state.itemByIndex(i);
+      if (item == null) {
         if (onlyOrdered) {
-          break;
+          stopAddingItems = true;
         }
-      } else {
-        temp.addAll([...pageState.items]);
       }
+      if (!stopAddingItems && item != null) {
+        items.add(item);
+      }
+      mixedTemp.add(item);
     }
 
-    return temp;
+    return (items: items, mixedItems: mixedTemp);
   }
 
   int get cachedItemsCount {
@@ -108,7 +132,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   List<T> get orderedItems {
-    return extractItems(this, onlyOrdered: false);
+    return extractItems(this, onlyOrdered: false).items;
   }
 
   PaginationPageState<T> getPageState(int page) {

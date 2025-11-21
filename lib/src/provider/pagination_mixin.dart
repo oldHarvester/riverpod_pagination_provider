@@ -311,8 +311,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   PaginationState<T, Z, Y> _valueTransformer(PaginationState<T, Z, Y> value) {
+    final extracted = PaginationState.extractItems(value);
     return value.copyWith(
-      items: PaginationState.extractItems(value),
+      items: extracted.items,
+      mixedItems: extracted.mixedItems,
     );
   }
 
@@ -566,6 +568,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       resetTimes: resetTimes,
       initialPage: initPage,
       items: [],
+      mixedItems: [],
       currentPage: initPage,
       limit: state?.limit ?? initialLimit,
       loadParams: state?.loadParams ?? initialLoadParams,
