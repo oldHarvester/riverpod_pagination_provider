@@ -36,20 +36,17 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     PaginationState<T, dynamic, dynamic> state, {
     bool onlyOrdered = true,
   }) {
-    final pageItems = {...state.pageItems};
-    final pages = state.loadedPages;
-    final emptyResult = (items: <T>[], mixedItems: <T>[]);
-    if (pages.isEmpty) {
-      return emptyResult;
-    } else if (pageItems.length == 1) {
-      final firstPageItems = pageItems[pages.first]!.items;
-      return (items: [...firstPageItems], mixedItems: [...firstPageItems]);
+    List<T?> getEmptyMixedItems() {
+      return List.generate(
+        state.totalCount,
+        (index) {
+          return null;
+        },
+      );
     }
 
-    final items = <T>[];
-    final mixedTemp = <T?>[];
-    bool stopAddingItems = false;
     // TODO: This way is faster but need to find a way to work with mixed items
+    // final pageItems = {...state.pageItems};
     // final start = pages.first;
     // final end = pages.last;
     // for (var i = start; i <= end; i++) {
@@ -64,9 +61,13 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     //     }
     //   }
     // }
+
+    final items = <T>[];
+    final mixedTemp = <T?>[];
+    bool stopAddingItems = false;
     final totalCount = state.totalCount;
     if (totalCount == 0) {
-      return emptyResult;
+      return (items: [], mixedItems: []);
     }
 
     for (var i = 0; i < totalCount; i++) {
