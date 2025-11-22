@@ -185,7 +185,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   InfiniteValue listenInfinite<InfiniteValue>({
-    InfiniteValue Function(ErrorStackTrace error)? error,
+    InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
     InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
     required InfiniteValue Function(
       PaginationState<T, Z, Y> data,
