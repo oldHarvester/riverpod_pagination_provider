@@ -33,6 +33,31 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     ErrorStackTrace? initialError,
   }) = _PaginationState<T, Z, Y>;
 
+  factory PaginationState.fromItems({
+    required List<T> items,
+    required Z loadParams,
+  }) {
+    return PaginationState(
+      pageItems: {
+        0: PaginationPageState(
+          items: [...items],
+          isLoading: false,
+          updateCount: 0,
+          errorStackTrace: null,
+        ),
+      },
+      items: [...items],
+      mixedItems: [...items],
+      loadParams: loadParams,
+      totalCount: items.length,
+      limit: items.length,
+      initialPage: 0,
+      initialLoading: false,
+      initialLoaded: true,
+      refreshing: false,
+    );
+  }
+
   static ({List<T> items, List<T?> mixedItems}) extractItems<T>(
     PaginationState<T, dynamic, dynamic> state, {
     bool onlyOrdered = true,
@@ -167,11 +192,13 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   bool get isNotEmpty {
-    return refreshing ? true : pageItems.entries.any(
-      (element) {
-        return !element.value.isEmpty;
-      },
-    );
+    return refreshing
+        ? true
+        : pageItems.entries.any(
+          (element) {
+            return !element.value.isEmpty;
+          },
+        );
   }
 
   bool get isEmpty {
