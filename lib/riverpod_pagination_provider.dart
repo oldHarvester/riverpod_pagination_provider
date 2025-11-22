@@ -6,3 +6,4 @@ export 'package:riverpod_pagination_provider/src/models/pagination_params/pagina
 export 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
 export 'package:riverpod_pagination_provider/src/models/pagination_page_response/pagination_page_response.dart';
 export 'package:riverpod_pagination_provider/src/models/paginated_list_response/paginated_list_response.dart';
+export 'package:riverpod_pagination_provider/src/models/pagination_status/pagination_status.dart';

@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_pagination_provider/src/models/error_stacktrace/error_stacktrace.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
+import 'package:riverpod_pagination_provider/src/models/pagination_status/pagination_status.dart';
 import 'package:riverpod_pagination_provider/src/utils/pagination_helpers.dart';
 
 part 'pagination_state.freezed.dart';
@@ -82,6 +83,20 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     }
 
     return (items: items, mixedItems: mixedTemp);
+  }
+
+  PaginationStatus get progressStatus {
+    return when(
+      loading: () {
+        return PaginationStatus.loadingBeforeData();
+      },
+      error: (error, stackTrace) {
+        return PaginationStatus.errorBeforeData();
+      },
+      data: (state) {
+        return PaginationStatus.errorBeforeData();
+      },
+    );
   }
 
   int get cachedItemsCount {
