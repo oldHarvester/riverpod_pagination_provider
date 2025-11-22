@@ -166,8 +166,16 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     }
   }
 
+  bool get isNotEmpty {
+    return pageItems.entries.any(
+      (element) {
+        return !element.value.isEmpty;
+      },
+    );
+  }
+
   bool get isEmpty {
-    return pageItems.isEmpty || items.isEmpty;
+    return !isNotEmpty;
   }
 
   bool get canShow {
@@ -179,7 +187,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
         return false;
       },
       data: (state) {
-        return !state.isEmpty;
+        return state.isNotEmpty;
       },
     );
   }
