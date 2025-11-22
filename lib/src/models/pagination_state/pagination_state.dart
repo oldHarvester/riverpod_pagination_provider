@@ -185,8 +185,8 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   InfiniteValue listenInfinite<InfiniteValue>({
-    required InfiniteValue Function(ErrorStackTrace error) error,
-    required InfiniteValue Function(PaginationState<T, Z, Y> data) empty,
+    InfiniteValue Function(ErrorStackTrace error)? error,
+    InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
     required InfiniteValue Function(
       PaginationState<T, Z, Y> data,
       int totalCount,
@@ -194,15 +194,17 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     )
     data,
   }) {
+    InfiniteValue callData() {
+      return data(this, totalCount, this.itemByIndex);
+    }
+
     return listen(
       (isLoading, errorStacktrace, state) {
         if (errorStacktrace != null) {
-          return error(errorStacktrace);
+          return error?.call(errorStacktrace) ?? callData();
         } else {
           final isEmpty = !isLoading && state.isEmpty;
-          return isEmpty
-              ? empty(this)
-              : data(this, totalCount, this.itemByIndex);
+          return isEmpty ? empty?.call(this) ?? callData() : callData();
         }
       },
     );
