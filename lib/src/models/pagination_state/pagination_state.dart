@@ -85,7 +85,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     return (items: items, mixedItems: mixedTemp);
   }
 
-  PaginationStatus get progressStatus {
+  PaginationStatus get status {
     return when(
       loading: () {
         return PaginationStatus.loadingBeforeData();
