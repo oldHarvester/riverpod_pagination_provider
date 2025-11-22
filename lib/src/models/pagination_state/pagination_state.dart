@@ -190,12 +190,13 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required InfiniteValue Function(
       PaginationState<T, Z, Y> data,
       int totalCount,
+      int resetTimes,
       T? Function(int index) itemByIndex,
     )
     data,
   }) {
     InfiniteValue callData() {
-      return data(this, totalCount, this.itemByIndex);
+      return data(this, totalCount, resetTimes, this.itemByIndex);
     }
 
     return listen(
