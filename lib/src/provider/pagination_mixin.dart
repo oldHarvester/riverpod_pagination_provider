@@ -579,6 +579,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     );
     if (autoStart) {
       loadPage(initPage);
+      loadPage(0);
     }
     return newState;
   }

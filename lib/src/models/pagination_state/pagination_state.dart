@@ -1,4 +1,3 @@
-import 'package:flutter_toolkit/flutter_toolkit.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_pagination_provider/src/models/error_stacktrace/error_stacktrace.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
@@ -63,21 +62,17 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     PaginationState<T, dynamic, dynamic> state, {
     bool onlyOrdered = true,
   }) {
-    final logger = CustomLogger(owner: 'pagination_log');
     final items = <T>[];
     final mixedTemp = <T?>[];
     bool stopAddingItems = false;
     final totalCount = state.totalCount;
     if (totalCount == 0) {
-      logger.log('skip due to totalcount is zero');
       return (items: [], mixedItems: []);
     }
 
     for (var i = 0; i < totalCount; i++) {
       final item = state.itemByIndex(i);
-      logger.log('check: ${item != null}');
       if (item == null && onlyOrdered && !stopAddingItems) {
-        logger.log('stopped adding items: $i - ${items.length}');
         stopAddingItems = true;
       }
       if (!stopAddingItems && item != null) {
