@@ -204,7 +204,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       limit = 1;
     }
     if (limit != state.limit) {
-      changeState(
+      updateState(
         state.copyWith(
           limit: limit,
         ),
@@ -304,7 +304,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
     final lastPage = visiblePageIndexMap.entries.lastOrNull?.key;
     if (lastPage != null) {
-      changeState(
+      updateState(
         state.copyWith(currentPage: lastPage),
       );
     }
@@ -416,7 +416,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         if (success) {
           _initialLoaded = true;
         }
-        changeState(
+        updateState(
           state.copyWith(
             initialLoading: initialLoading,
             initialLoaded: initialLoaded,

@@ -1,3 +1,4 @@
+import 'package:flutter_toolkit/flutter_toolkit.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_pagination_provider/src/models/error_stacktrace/error_stacktrace.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
@@ -62,43 +63,21 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     PaginationState<T, dynamic, dynamic> state, {
     bool onlyOrdered = true,
   }) {
-    List<T?> getEmptyMixedItems() {
-      return List.generate(
-        state.totalCount,
-        (index) {
-          return null;
-        },
-      );
-    }
-
-    // TODO: This way is faster but need to find a way to work with mixed items
-    // final pageItems = {...state.pageItems};
-    // final start = pages.first;
-    // final end = pages.last;
-    // for (var i = start; i <= end; i++) {
-    //   final pageState = pageItems[i];
-    //   if (pageState == null || pageState.hasError) {
-    //     if (onlyOrdered) {
-    //       stopAddingItems = true;
-    //     }
-    //   } else {
-    //     if (!stopAddingItems) {
-    //       items.addAll([...pageState.items]);
-    //     }
-    //   }
-    // }
-
+    final logger = CustomLogger(owner: 'pagination_log');
     final items = <T>[];
     final mixedTemp = <T?>[];
     bool stopAddingItems = false;
     final totalCount = state.totalCount;
     if (totalCount == 0) {
+      logger.log('skip due to totalcount is zero');
       return (items: [], mixedItems: []);
     }
 
     for (var i = 0; i < totalCount; i++) {
       final item = state.itemByIndex(i);
+      logger.log('check: ${item != null}');
       if (item == null && onlyOrdered && !stopAddingItems) {
+        logger.log('stopped adding items: $i - ${items.length}');
         stopAddingItems = true;
       }
       if (!stopAddingItems && item != null) {
