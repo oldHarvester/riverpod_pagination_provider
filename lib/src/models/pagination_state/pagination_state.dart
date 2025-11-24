@@ -192,13 +192,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   bool get isNotEmpty {
-    return refreshing
-        ? true
-        : pageItems.entries.any(
-          (element) {
-            return !element.value.isEmpty;
-          },
-        );
+    return refreshing ? true : totalCount != 0;
   }
 
   bool get isEmpty {
