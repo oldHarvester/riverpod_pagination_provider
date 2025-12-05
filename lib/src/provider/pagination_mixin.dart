@@ -410,7 +410,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
     final refreshCompleter = _refreshCompleter;
 
-    void stopRefresh({bool success = false}) {
+    void onCompleteRefresh({bool success = false}) {
       if (refreshCompleter.canPerformAction(_refreshCompleter)) {
         refreshCompleter.complete();
         if (success) {
@@ -450,7 +450,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
             pageItems: currentPageItems,
           ),
         );
-        stopRefresh(success: true);
+        onCompleteRefresh(success: true);
         _log('page updated: $page');
       }
     } catch (e, stk) {
@@ -482,7 +482,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
                       : state.initialError,
             ),
           );
-          stopRefresh();
+          onCompleteRefresh();
       }
     }
   }
