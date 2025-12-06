@@ -5,6 +5,8 @@ import 'package:example/presentation/pages/without_builder_page.dart';
 import 'package:example/utils/context_extension.dart';
 import 'package:flutter/material.dart';
 
+import 'test_infinite_page.dart';
+
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
 
@@ -41,6 +43,14 @@ class MenuPage extends StatelessWidget {
                 context.push(child: WithoutBuilderPage());
               },
               child: Text('Test Without builder'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.push(child: TestInfinitePage());
+              },
+              child: Text(
+                "Test Infinite Page",
+              ),
             ),
           ],
         ),

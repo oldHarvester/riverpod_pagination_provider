@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_pagination_provider/riverpod_pagination_provider.dart';
 
 import '../providers/test_notifier_provider.dart';
 import '../widgets/error_placeholder.dart';
@@ -17,11 +18,23 @@ class _TestNotifierPageState extends ConsumerState<TestNotifierPage> {
   Widget build(BuildContext context) {
     final testState = ref.watch(testNotifierProvider);
     final testController = ref.watch(testNotifierProvider.notifier);
+    // final oldState = testState.oldState;
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          testController.reset(
+            resetType: PaginationResetType.refresh,
+          );
+        },
+        child: Icon(Icons.refresh),
+      ),
       body: Row(
         children: [
           Expanded(
             child: testState.when(
+              showCacheOnRefresh: false,
+              skipInitialLoading: false,
+              skipRefreshing: false,
               loading: () {
                 return LoadingPlaceholder();
               },

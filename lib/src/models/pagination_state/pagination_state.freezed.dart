@@ -31,6 +31,7 @@ mixin _$PaginationState<T, Z, Y> {
   bool get initialLoading => throw _privateConstructorUsedError;
   bool get initialLoaded => throw _privateConstructorUsedError;
   bool get refreshing => throw _privateConstructorUsedError;
+  bool get cachedBeforeRefresh => throw _privateConstructorUsedError;
   ErrorStackTrace? get initialError => throw _privateConstructorUsedError;
 
   /// Create a copy of PaginationState
@@ -61,6 +62,7 @@ abstract class $PaginationStateCopyWith<T, Z, Y, $Res> {
     bool initialLoading,
     bool initialLoaded,
     bool refreshing,
+    bool cachedBeforeRefresh,
     ErrorStackTrace? initialError,
   });
 
@@ -101,6 +103,7 @@ class _$PaginationStateCopyWithImpl<
     Object? initialLoading = null,
     Object? initialLoaded = null,
     Object? refreshing = null,
+    Object? cachedBeforeRefresh = null,
     Object? initialError = freezed,
   }) {
     return _then(
@@ -170,6 +173,11 @@ class _$PaginationStateCopyWithImpl<
                     ? _value.refreshing
                     : refreshing // ignore: cast_nullable_to_non_nullable
                         as bool,
+            cachedBeforeRefresh:
+                null == cachedBeforeRefresh
+                    ? _value.cachedBeforeRefresh
+                    : cachedBeforeRefresh // ignore: cast_nullable_to_non_nullable
+                        as bool,
             initialError:
                 freezed == initialError
                     ? _value.initialError
@@ -218,6 +226,7 @@ abstract class _$$PaginationStateImplCopyWith<T, Z, Y, $Res>
     bool initialLoading,
     bool initialLoaded,
     bool refreshing,
+    bool cachedBeforeRefresh,
     ErrorStackTrace? initialError,
   });
 
@@ -259,6 +268,7 @@ class __$$PaginationStateImplCopyWithImpl<T, Z, Y, $Res>
     Object? initialLoading = null,
     Object? initialLoaded = null,
     Object? refreshing = null,
+    Object? cachedBeforeRefresh = null,
     Object? initialError = freezed,
   }) {
     return _then(
@@ -328,6 +338,11 @@ class __$$PaginationStateImplCopyWithImpl<T, Z, Y, $Res>
                 ? _value.refreshing
                 : refreshing // ignore: cast_nullable_to_non_nullable
                     as bool,
+        cachedBeforeRefresh:
+            null == cachedBeforeRefresh
+                ? _value.cachedBeforeRefresh
+                : cachedBeforeRefresh // ignore: cast_nullable_to_non_nullable
+                    as bool,
         initialError:
             freezed == initialError
                 ? _value.initialError
@@ -355,6 +370,7 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
     required this.initialLoading,
     required this.initialLoaded,
     required this.refreshing,
+    required this.cachedBeforeRefresh,
     this.initialError,
   }) : _pageItems = pageItems,
        _items = items,
@@ -408,11 +424,13 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
   @override
   final bool refreshing;
   @override
+  final bool cachedBeforeRefresh;
+  @override
   final ErrorStackTrace? initialError;
 
   @override
   String toString() {
-    return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, mixedItems: $mixedItems, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes, initialLoading: $initialLoading, initialLoaded: $initialLoaded, refreshing: $refreshing, initialError: $initialError)';
+    return 'PaginationState<$T, $Z, $Y>(pageItems: $pageItems, items: $items, mixedItems: $mixedItems, loadParams: $loadParams, extraArgs: $extraArgs, totalCount: $totalCount, limit: $limit, initialPage: $initialPage, currentPage: $currentPage, resetTimes: $resetTimes, initialLoading: $initialLoading, initialLoaded: $initialLoaded, refreshing: $refreshing, cachedBeforeRefresh: $cachedBeforeRefresh, initialError: $initialError)';
   }
 
   @override
@@ -449,6 +467,8 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
                 other.initialLoaded == initialLoaded) &&
             (identical(other.refreshing, refreshing) ||
                 other.refreshing == refreshing) &&
+            (identical(other.cachedBeforeRefresh, cachedBeforeRefresh) ||
+                other.cachedBeforeRefresh == cachedBeforeRefresh) &&
             (identical(other.initialError, initialError) ||
                 other.initialError == initialError));
   }
@@ -469,6 +489,7 @@ class _$PaginationStateImpl<T, Z, Y> extends _PaginationState<T, Z, Y> {
     initialLoading,
     initialLoaded,
     refreshing,
+    cachedBeforeRefresh,
     initialError,
   );
 
@@ -501,6 +522,7 @@ abstract class _PaginationState<T, Z, Y> extends PaginationState<T, Z, Y> {
     required final bool initialLoading,
     required final bool initialLoaded,
     required final bool refreshing,
+    required final bool cachedBeforeRefresh,
     final ErrorStackTrace? initialError,
   }) = _$PaginationStateImpl<T, Z, Y>;
   const _PaginationState._() : super._();
@@ -531,6 +553,8 @@ abstract class _PaginationState<T, Z, Y> extends PaginationState<T, Z, Y> {
   bool get initialLoaded;
   @override
   bool get refreshing;
+  @override
+  bool get cachedBeforeRefresh;
   @override
   ErrorStackTrace? get initialError;
 

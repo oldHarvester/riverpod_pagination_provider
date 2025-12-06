@@ -30,6 +30,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required bool initialLoading,
     required bool initialLoaded,
     required bool refreshing,
+    required bool cachedBeforeRefresh,
     ErrorStackTrace? initialError,
   }) = _PaginationState<T, Z, Y>;
 
@@ -38,6 +39,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required Z loadParams,
   }) {
     return PaginationState(
+      cachedBeforeRefresh: false,
       pageItems: {
         0: PaginationPageState(
           items: [...items],
@@ -82,6 +84,16 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     }
 
     return (items: items, mixedItems: mixedTemp);
+  }
+
+  PaginationState<T, Z, Y> get nonCachedState {
+    return cachedBeforeRefresh
+        ? copyWith(
+          items: [],
+          mixedItems: [],
+          pageItems: {},
+        )
+        : this;
   }
 
   PaginationStatus get status {
@@ -152,7 +164,13 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     return pageItems[page] ?? PaginationPageState();
   }
 
-  T? itemByIndex(int index) {
+  T? itemByIndex(
+    int index, {
+    bool showCache = true,
+  }) {
+    if (cachedBeforeRefresh && !showCache) {
+      return null;
+    }
     try {
       final relativeIndex = PaginationHelpers.getRelativeIndex(
         index,
@@ -188,6 +206,9 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   }
 
   InfiniteValue listenInfinite<InfiniteValue>({
+    bool showCacheOnRefresh = false,
+    bool skipInitialLoading = false,
+    InfiniteValue Function()? loading,
     InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
     InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
     required InfiniteValue Function(
@@ -198,44 +219,40 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     )
     data,
   }) {
-    InfiniteValue callData() {
-      return data(this, totalCount, resetTimes, this.itemByIndex);
+    final initialError = this.initialError;
+    final state = showCacheOnRefresh ? this : nonCachedState;
+    final isEmpty = this.isEmpty;
+    if (loading != null && initialLoading && !skipInitialLoading) {
+      return loading();
+    } else if (initialError != null && error != null) {
+      return error(initialError);
+    } else if (isEmpty && empty != null) {
+      return empty(state);
+    } else {
+      return data(
+        state,
+        state.totalCount,
+        state.resetTimes,
+        state.itemByIndex,
+      );
     }
-
-    return listen(
-      (isLoading, errorStacktrace, state) {
-        if (errorStacktrace != null) {
-          return error?.call(errorStacktrace) ?? callData();
-        } else {
-          final isEmpty = !isLoading && state.isEmpty;
-          return isEmpty ? empty?.call(this) ?? callData() : callData();
-        }
-      },
-    );
   }
 
   ListenValue listen<ListenValue>(
     ListenValue Function(
-      bool isLoading,
+      bool initialLoading,
       ErrorStackTrace? errorStacktrace,
       PaginationState<T, Z, Y> data,
     )
-    callback,
-  ) {
-    return when(
-      loading: () {
-        return callback(true, null, this);
-      },
-      error: (error, stackTrace) {
-        return callback(
-          false,
-          ErrorStackTrace(error: error, stackTrace: stackTrace),
-          this,
-        );
-      },
-      data: (state) {
-        return callback(false, null, this);
-      },
+    callback, {
+    bool skipRefreshing = true,
+    bool showCacheOnRefresh = false,
+  }) {
+    final state = showCacheOnRefresh ? this : nonCachedState;
+    return callback(
+      state.initialLoading,
+      state.initialError,
+      state,
     );
   }
 
@@ -244,10 +261,20 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required WhenValue Function(Object error, StackTrace stackTrace) error,
     required WhenValue Function(PaginationState<T, Z, Y> state) data,
     WhenValue Function(PaginationState<T, Z, Y> state)? empty,
+    bool skipRefreshing = false,
+    bool showCacheOnRefresh = false,
+    bool skipInitialLoading = false,
   }) {
+    final cachedBeforeRefresh = this.cachedBeforeRefresh;
+    final initialLoading = this.initialLoading;
+    final refreshing = !initialLoading && this.refreshing;
     final errorStackTrace = initialError;
     final isEmpty = this.isEmpty;
-    return initialLoading
+    return cachedBeforeRefresh && showCacheOnRefresh
+        ? data(this)
+        : !skipInitialLoading && initialLoading
+        ? loading()
+        : !skipRefreshing && refreshing
         ? loading()
         : errorStackTrace != null
         ? error(errorStackTrace.error, errorStackTrace.stackTrace)
@@ -261,14 +288,24 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     WhenValue? Function(Object error, StackTrace stackTrace)? error,
     WhenValue Function(PaginationState<T, Z, Y> state)? empty,
     WhenValue? Function(PaginationState<T, Z, Y> state)? data,
+    bool skipRefreshing = false,
+    bool showCacheOnRefresh = false,
+    bool skipInitialLoading = false,
   }) {
-    final errorStackTrace = initialError;
-    return initialLoading
-        ? loading?.call()
-        : errorStackTrace != null
-        ? error?.call(errorStackTrace.error, errorStackTrace.stackTrace)
-        : isEmpty
-        ? empty?.call(this) ?? data?.call(this)
-        : data?.call(this);
+    return when(
+      skipInitialLoading: skipInitialLoading,
+      showCacheOnRefresh: showCacheOnRefresh,
+      skipRefreshing: skipRefreshing,
+      loading: () {
+        return loading?.call();
+      },
+      error: (e, stackTrace) {
+        return error?.call(e, stackTrace);
+      },
+      empty: (state) => empty?.call(state),
+      data: (state) {
+        return data?.call(state);
+      },
+    );
   }
 }

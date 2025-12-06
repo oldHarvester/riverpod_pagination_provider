@@ -103,7 +103,7 @@ class _TestNotifierStatePageState extends ConsumerState<TestNotifierStatePage> {
     final loadItems = loadParams.loadItems;
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: testController.refresh,
+        onPressed: testController.reset,
         child: Icon(Icons.refresh),
       ),
       body: SafeArea(

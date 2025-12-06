@@ -24,7 +24,7 @@ final class TestDatasourceService {
   }) async {
     final randomItems = Random().nextInt(100) + 50;
     return Future.delayed(
-      Duration(milliseconds: 200),
+      Duration(milliseconds: 500),
       () {
         final items = _prepareItems(loadRandom ? randomItems : loadItems);
         return PaginatedListResponse(

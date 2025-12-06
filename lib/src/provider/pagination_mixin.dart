@@ -63,7 +63,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   bool get useThrottler => true;
 
+  bool get useCacheOnReload => true;
+
   PaginationResetType get resetOnLoadParamsChanged => PaginationResetType.force;
+
+  PaginationResetType get defaultResetType => PaginationResetType.force;
 
   PaginationPageUpdateType get pageUpdateType =>
       PaginationPageUpdateType.autoUpdateCache;
@@ -95,23 +99,26 @@ mixin PaginationNotifierMixin<T, Z, Y>
         pageItems: {},
       ),
     );
-    refresh();
+    reset(resetType: PaginationResetType.force);
   }
 
-  void reset({bool schedule = false}) {
+  void reset({
+    bool schedule = false,
+    PaginationResetType? resetType,
+  }) {
+    final resultResetType = resetType ?? defaultResetType;
     _refreshThrottler.execute(
       duration: schedule ? throttleDuration : Duration.zero,
       onAction: () {
-        markResetToZero();
-        refresh();
-      },
-    );
-  }
-
-  void refresh({bool schedule = false}) {
-    _refreshThrottler.execute(
-      duration: schedule ? throttleDuration : Duration.zero,
-      onAction: () {
+        switch (resultResetType) {
+          case PaginationResetType.force:
+            markResetToZero();
+            break;
+          case PaginationResetType.refresh:
+            break;
+          case PaginationResetType.none:
+            break;
+        }
         ref.invalidateSelf();
       },
     );
@@ -180,20 +187,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  void resetByType({
-    required PaginationResetType resetType,
-    required bool throttle,
-  }) {
-    switch (resetType) {
-      case PaginationResetType.force:
-        reset(schedule: throttle);
-      case PaginationResetType.refresh:
-        refresh(schedule: throttle);
-      case PaginationResetType.none:
-        break;
-    }
-  }
-
   void changeLimit(
     int limit, {
     bool? throttle,
@@ -210,9 +203,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
         ),
       );
 
-      resetByType(
+      reset(
         resetType: resetType,
-        throttle: useThrottler,
+        schedule: useThrottler,
       );
     }
   }
@@ -223,7 +216,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     PaginationResetType? resetType,
   }) {
     final useThrottler = throttle ?? this.useThrottler;
-    final reset = resetType ?? resetOnLoadParamsChanged;
+    final resultResetType = resetType ?? resetOnLoadParamsChanged;
     final newParams = onChange(state.loadParams);
     if (state.loadParams != newParams) {
       updateState(
@@ -231,9 +224,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
           loadParams: newParams,
         ),
       );
-      resetByType(
-        resetType: reset,
-        throttle: useThrottler,
+      reset(
+        resetType: resultResetType,
+        schedule: useThrottler,
       );
     }
   }
@@ -378,6 +371,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
     updateState(state.copyWith(currentPage: page));
   }
 
+  
+
   Future<void> loadPage(
     int page, {
     bool? changePage,
@@ -418,6 +413,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         }
         updateState(
           state.copyWith(
+            cachedBeforeRefresh: false,
             initialLoading: initialLoading,
             initialLoaded: initialLoaded,
             refreshing: refreshing,
@@ -434,7 +430,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
       if (response == null) {
         return;
       }
-      final currentPageItems = {...state.pageItems};
+      final currentPageItems = {if (!refreshing) ...state.pageItems};
       currentPageItems[page] = response.page;
       final totalCountChanged =
           state.totalCount == 0
@@ -563,18 +559,20 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
     final newState = _valueTransformer(
       PaginationState<T, Z, Y>(
+        cachedBeforeRefresh: useCacheOnReload,
         initialLoaded: initialLoaded,
         refreshing: refreshing,
         initialLoading: initialLoading,
         resetTimes: resetTimes,
         initialPage: initPage,
-        items: [],
-        mixedItems: [],
         currentPage: initPage,
+        extraArgs: state?.extraArgs,
         limit: state?.limit ?? initialLimit,
         loadParams: state?.loadParams ?? initialLoadParams,
         totalCount: state?.totalCount ?? 0,
-        pageItems: {},
+        mixedItems: useCacheOnReload ? (state?.mixedItems ?? []) : [],
+        items: useCacheOnReload ? (state?.items ?? []) : [],
+        pageItems: useCacheOnReload ? (state?.pageItems ?? {}) : {},
       ),
     );
     if (autoStart) {
