@@ -371,8 +371,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
     updateState(state.copyWith(currentPage: page));
   }
 
-  
-
   Future<void> loadPage(
     int page, {
     bool? changePage,
@@ -381,7 +379,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     final pageUpdateType = updateType ?? this.pageUpdateType;
     final oldState = stateOrNull;
     if (oldState != null) {
-      if (updateType == PaginationPageUpdateType.nonUpdateCache) {
+      if (pageUpdateType == PaginationPageUpdateType.nonUpdateCache) {
         final pageState = oldState.pageItems[page];
 
         if (pageState != null && !pageState.hasError) {
@@ -393,7 +391,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         _changePage(page);
       }
 
-      if (updateType == PaginationPageUpdateType.clearOthers) {
+      if (pageUpdateType == PaginationPageUpdateType.clearOthers) {
         _clearAndReset();
         updateState(
           oldState.copyWith(
@@ -425,7 +423,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
     try {
       final response = await _initiatePageLoading(
         page,
-        updateType: pageUpdateType,
       );
       if (response == null) {
         return;
@@ -483,10 +480,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  Future<PaginationPageResponse<T>?> _initiatePageLoading(
-    int page, {
-    required PaginationPageUpdateType updateType,
-  }) async {
+  Future<PaginationPageResponse<T>?> _initiatePageLoading(int page) async {
     final existCompleter = _pageCompleters[page];
     if (existCompleter != null && !existCompleter.isCompleted) {
       return existCompleter.future;
