@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_pagination_provider/src/models/error_stacktrace/error_stacktrace.dart';
 import 'package:riverpod_pagination_provider/src/models/paginated_list_response/paginated_list_response.dart';
+import 'package:riverpod_pagination_provider/src/models/pagination_batch_response/pagination_batch_response.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_page_state/pagination_page_state.dart';
 import 'package:riverpod_pagination_provider/src/models/pagination_state/pagination_state.dart';
 import 'package:riverpod_pagination_provider/src/utils/pagination_helpers.dart';
@@ -21,5 +22,3 @@ part 'notifiers/autodispose_family_notifier.dart';
 part 'notifiers/family_notifier.dart';
 part 'notifiers/autodispose_notifier.dart';
 part 'notifiers/notifier.dart';
-
-

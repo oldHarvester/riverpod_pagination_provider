@@ -3,6 +3,7 @@ part of 'pagination_provider.dart';
 enum PaginationResetType {
   refresh,
   force,
+  reloadAll,
   none,
 }
 
@@ -36,6 +37,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
   /// IF set this value to true invalidating provider leads to load from first page and also resetTimes will be updated
   bool _mustResetToZeroPage = false;
 
+  /// IF set this value to `true` invalidating provider will lead to load previous pages
+  bool _mustReloadPreviousPages = false;
+
   /// Debug label for logger
   String? get debugLabel => null;
 
@@ -64,6 +68,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
   bool get useThrottler => true;
 
   bool get useCacheOnReload => true;
+
+  bool get alwaysReloadPages => false;
 
   PaginationResetType get resetOnLoadParamsChanged => PaginationResetType.force;
 
@@ -111,6 +117,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
       duration: schedule ? throttleDuration : Duration.zero,
       onAction: () {
         switch (resultResetType) {
+          case PaginationResetType.reloadAll:
+            markReloadAllPages();
           case PaginationResetType.force:
             markResetToZero();
             break;
@@ -134,6 +142,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   void _clearAndReset() {
     _closeScheduledTasks();
+    if (alwaysReloadPages) {
+      markReloadAllPages();
+    }
     _refreshCompleter = FlexibleCompleter();
   }
 
@@ -362,6 +373,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _mustResetToZeroPage = true;
   }
 
+  void markReloadAllPages() {
+    _mustReloadPreviousPages = true;
+  }
+
   int? _getMaxClosedPage() {
     final state = stateOrNull;
     return state?.maxFrom(state.currentPage);
@@ -406,17 +421,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     void onCompleteRefresh({bool success = false}) {
       if (refreshCompleter.canPerformAction(_refreshCompleter)) {
         refreshCompleter.complete();
-        if (success) {
-          _initialLoaded = true;
-        }
-        updateState(
-          state.copyWith(
-            cachedBeforeRefresh: false,
-            initialLoading: initialLoading,
-            initialLoaded: initialLoaded,
-            refreshing: refreshing,
-          ),
-        );
+        _onRefreshComplete(success: success);
       }
     }
 
@@ -477,6 +482,137 @@ mixin PaginationNotifierMixin<T, Z, Y>
           );
           onCompleteRefresh();
       }
+    }
+  }
+
+  void _onRefreshComplete({required bool success}) {
+    if (success) {
+      _initialLoaded = true;
+    }
+    updateState(
+      state.copyWith(
+        cachedBeforeRefresh: false,
+        initialLoading: initialLoading,
+        initialLoaded: initialLoaded,
+        refreshing: refreshing,
+      ),
+    );
+  }
+
+  Future<void> loadToMax(int maxPage) async {
+    if (maxPage == 0) {
+      return;
+    }
+    final refreshCompleter = _refreshCompleter;
+
+    void onCompleteRefresh({bool success = false}) {
+      if (refreshCompleter.canPerformAction(_refreshCompleter)) {
+        refreshCompleter.complete();
+        _onRefreshComplete(success: success);
+      }
+    }
+
+    final response = await _loadBatch(maxPage);
+
+    if (!response.cancelled) {
+      final setInitialError = refreshCompleter.canPerformAction(
+        _refreshCompleter,
+      );
+      final errorOccured = response.errorStacktrace != null;
+      final pageStates = response.pageStates(_getPageUpdateCount);
+      updateState(
+        state.copyWith(
+          initialError:
+              setInitialError ? response.errorStacktrace : state.initialError,
+          pageItems: {
+            if (!refreshing) ...state.pageItems,
+            ...pageStates,
+          },
+        ),
+      );
+      onCompleteRefresh(success: !errorOccured);
+    }
+  }
+
+  Future<PaginationBatchResponse<T>> _loadBatch(
+    int maxPage,
+  ) async {
+    var totalCount = 0;
+    final temp = <int, List<T>>{};
+    final oldState = stateOrNull;
+    final limit = oldState?.limit ?? initialLimit;
+    final pages = Iterable.generate(
+      maxPage,
+      (index) {
+        return index;
+      },
+    );
+
+    final completers = Map.fromEntries(
+      pages.map(
+        (page) {
+          _increasePageUpdateCount(page);
+          return MapEntry(
+            page,
+            FlexibleCompleter<PaginationPageResponse<T>>(),
+          );
+        },
+      ),
+    );
+    _pageCompleters.addAll({...completers});
+    bool isSync() {
+      final pageCompleter = _pageCompleters[pages.first];
+      final operationCompleter = completers[pages.first];
+      if (pageCompleter == null || operationCompleter == null) {
+        return false;
+      }
+      return operationCompleter.canPerformAction(pageCompleter);
+    }
+
+    try {
+      final response = await loadCountItems(
+        paginationParams: PaginationParams(
+          limit: maxPage * limit,
+          offset: 0,
+        ),
+      );
+      final totalCount = response.totalCount;
+      final isCancelled = !isSync();
+      for (final page in pages) {
+        final items = response.results.paginate(page, limit).toList();
+        final updateCount = _getPageUpdateCount(page);
+        final pageState = PaginationPageState(
+          items: [...items],
+          isLoading: false,
+          updateCount: updateCount,
+        );
+        final paginationPageResponse = PaginationPageResponse(
+          page: pageState,
+          totalCount: response.totalCount,
+        );
+        completers[page]?.complete(paginationPageResponse);
+        temp[page] = [...items];
+      }
+
+      return PaginationBatchResponse<T>(
+        totalCount: totalCount,
+        cancelled: isCancelled,
+        pageItems: temp,
+      );
+    } catch (e, stk) {
+      for (final page in pages) {
+        completers[page]?.completeError(e, stk);
+      }
+      final isCancelled = !isSync();
+      return PaginationBatchResponse(
+        totalCount: totalCount,
+        cancelled: isCancelled,
+        errorStacktrace: ErrorStackTrace(
+          error: e,
+          stackTrace: stk,
+        ),
+        pageItems: {},
+      );
     }
   }
 
@@ -543,12 +679,17 @@ mixin PaginationNotifierMixin<T, Z, Y>
     final state = stateOrNull;
     final closestPage = _getMaxClosedPage();
     final resetToZero = _mustResetToZeroPage;
+    final reloadPreviousPages = _mustReloadPreviousPages;
     final initPage = resetToZero ? 0 : closestPage ?? this.initialPage;
     var resetTimes = state?.resetTimes ?? 0;
     if (resetToZero) {
       _mustResetToZeroPage = false;
       _pageUpdateCount.clear();
       resetTimes++;
+    }
+
+    if (reloadPreviousPages) {
+      _mustReloadPreviousPages = false;
     }
 
     final newState = _valueTransformer(
@@ -569,10 +710,16 @@ mixin PaginationNotifierMixin<T, Z, Y>
         pageItems: useCacheOnReload ? (state?.pageItems ?? {}) : {},
       ),
     );
-    if (autoStart) {
-      loadPage(initPage);
-      loadPage(0);
+    final lastPage = state?.loadedPages.lastOrNull;
+    if (reloadPreviousPages && lastPage != null) {
+      loadToMax(lastPage + 1);
+    } else {
+      if (autoStart) {
+        loadPage(initPage);
+        loadPage(0);
+      }
     }
+
     return newState;
   }
 }
