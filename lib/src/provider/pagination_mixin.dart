@@ -108,6 +108,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     reset(resetType: PaginationResetType.force);
   }
 
+  void refresh() {
+    reset();
+  }
+
   void reset({
     bool schedule = false,
     PaginationResetType? resetType,
