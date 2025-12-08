@@ -118,6 +118,10 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     return temp;
   }
 
+  bool get hasMore {
+    return items.length != totalCount;
+  }
+
   Set<int> get loadedPages {
     final temp =
         pageItems.keys.toList()..sort(
