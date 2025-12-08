@@ -534,6 +534,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
           },
         ),
       );
+      if (errorOccured) {
+        _log('batch update failed: ${pageStates.keys.join(', ')}');
+      } else {
+        _log('batch update complete: ${pageStates.keys.join(', ')}');
+      }
       onCompleteRefresh(success: !errorOccured);
     }
   }
