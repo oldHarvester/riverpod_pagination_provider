@@ -528,6 +528,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         state.copyWith(
           initialError:
               setInitialError ? response.errorStacktrace : state.initialError,
+          totalCount: response.totalCount,
           pageItems: {
             if (!refreshing) ...state.pageItems,
             ...pageStates,
