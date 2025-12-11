@@ -505,6 +505,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   void _onRefreshComplete({required bool success}) {
     if (success) {
       _initialLoaded = true;
+      afterRefresh();
     }
     updateState(
       state.copyWith(
@@ -514,7 +515,6 @@ mixin PaginationNotifierMixin<T, Z, Y>
         refreshing: refreshing,
       ),
     );
-    afterRefresh();
   }
 
   Future<void> loadToMax(int maxPage) async {
