@@ -514,6 +514,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         refreshing: refreshing,
       ),
     );
+    afterRefresh();
   }
 
   Future<void> loadToMax(int maxPage) async {
@@ -696,11 +697,25 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _pageUpdateCount[page] = (_pageUpdateCount[page] ?? 0) + 1;
   }
 
+  @protected
   void beforeBuild() {}
 
   @protected
+  void beforeRefresh() {}
+
+  @protected
+  void afterRefresh() {}
+
+  @protected
   PaginationState<T, Z, Y> initiateBuild() {
-    ref.onDispose(_clearAndReset);
+    ref.onDispose(
+      () {
+        try {
+          beforeRefresh();
+        } catch (_) {}
+        _clearAndReset();
+      },
+    );
     beforeBuild();
     final state = stateOrNull;
     final closestPage = _getMaxClosedPage();
