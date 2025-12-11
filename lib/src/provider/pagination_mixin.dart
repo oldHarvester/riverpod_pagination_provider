@@ -696,9 +696,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _pageUpdateCount[page] = (_pageUpdateCount[page] ?? 0) + 1;
   }
 
+  void beforeBuild() {}
+
   @protected
   PaginationState<T, Z, Y> initiateBuild() {
     ref.onDispose(_clearAndReset);
+    beforeBuild();
     final state = stateOrNull;
     final closestPage = _getMaxClosedPage();
     final resetToZero = _mustResetToZeroPage;
