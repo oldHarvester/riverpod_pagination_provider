@@ -123,15 +123,17 @@ mixin PaginationNotifierMixin<T, Z, Y>
         switch (resultResetType) {
           case PaginationResetType.reloadAll:
             markReloadAllPages();
+            ref.invalidateSelf();
           case PaginationResetType.force:
             markResetToZero();
+            ref.invalidateSelf();
             break;
           case PaginationResetType.refresh:
+            ref.invalidateSelf();
             break;
           case PaginationResetType.none:
             break;
         }
-        ref.invalidateSelf();
       },
     );
   }
@@ -223,6 +225,17 @@ mixin PaginationNotifierMixin<T, Z, Y>
         schedule: useThrottler,
       );
     }
+  }
+
+  void updateLoadParams(
+    Z Function(Z current) onChange, {
+    bool? throttle = false,
+  }) {
+    changeLoadParams(
+      resetType: PaginationResetType.none,
+      throttle: throttle,
+      onChange,
+    );
   }
 
   void changeLoadParams(
