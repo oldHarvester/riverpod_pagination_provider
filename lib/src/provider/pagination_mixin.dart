@@ -389,7 +389,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   void onPageUpdated({
     required int page,
-    required PaginationPageResponse pageResponse,
+    required PaginationPageResponse<T> pageResponse,
     required bool wasRefreshing,
   }) {}
 
