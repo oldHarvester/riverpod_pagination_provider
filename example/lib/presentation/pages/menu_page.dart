@@ -1,4 +1,5 @@
 import 'package:example/presentation/pages/test_family_notifier_page.dart';
+import 'package:example/presentation/pages/test_infinite_page_2.dart';
 import 'package:example/presentation/pages/test_notifier_page.dart';
 import 'package:example/presentation/pages/test_notifier_state_page.dart';
 import 'package:example/presentation/pages/without_builder_page.dart';
@@ -51,6 +52,12 @@ class MenuPage extends StatelessWidget {
               child: Text(
                 "Test Infinite Page",
               ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.push(child: TestInfinitePage2());
+              },
+              child: Text('Test Infinite Page 2'),
             ),
           ],
         ),

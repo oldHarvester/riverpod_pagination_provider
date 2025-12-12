@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../pagination_page_state/pagination_page_state.dart';
+import '../../../riverpod_pagination_provider.dart';
 
 part 'pagination_page_response.freezed.dart';
 
@@ -9,5 +9,6 @@ abstract class PaginationPageResponse<T> with _$PaginationPageResponse<T> {
   const factory PaginationPageResponse({
     required PaginationPageState<T> page,
     required int totalCount,
+    required PaginationParams paginationParams,
   }) = _PaginationPageResponse<T>;
 }

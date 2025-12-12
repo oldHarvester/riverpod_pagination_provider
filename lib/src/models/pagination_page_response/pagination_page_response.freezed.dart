@@ -19,6 +19,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$PaginationPageResponse<T> {
   PaginationPageState<T> get page => throw _privateConstructorUsedError;
   int get totalCount => throw _privateConstructorUsedError;
+  PaginationParams get paginationParams => throw _privateConstructorUsedError;
 
   /// Create a copy of PaginationPageResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -34,9 +35,14 @@ abstract class $PaginationPageResponseCopyWith<T, $Res> {
     $Res Function(PaginationPageResponse<T>) then,
   ) = _$PaginationPageResponseCopyWithImpl<T, $Res, PaginationPageResponse<T>>;
   @useResult
-  $Res call({PaginationPageState<T> page, int totalCount});
+  $Res call({
+    PaginationPageState<T> page,
+    int totalCount,
+    PaginationParams paginationParams,
+  });
 
   $PaginationPageStateCopyWith<T, $Res> get page;
+  $PaginationParamsCopyWith<$Res> get paginationParams;
 }
 
 /// @nodoc
@@ -57,7 +63,11 @@ class _$PaginationPageResponseCopyWithImpl<
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? page = null, Object? totalCount = null}) {
+  $Res call({
+    Object? page = null,
+    Object? totalCount = null,
+    Object? paginationParams = null,
+  }) {
     return _then(
       _value.copyWith(
             page:
@@ -70,6 +80,11 @@ class _$PaginationPageResponseCopyWithImpl<
                     ? _value.totalCount
                     : totalCount // ignore: cast_nullable_to_non_nullable
                         as int,
+            paginationParams:
+                null == paginationParams
+                    ? _value.paginationParams
+                    : paginationParams // ignore: cast_nullable_to_non_nullable
+                        as PaginationParams,
           )
           as $Val,
     );
@@ -84,6 +99,16 @@ class _$PaginationPageResponseCopyWithImpl<
       return _then(_value.copyWith(page: value) as $Val);
     });
   }
+
+  /// Create a copy of PaginationPageResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $PaginationParamsCopyWith<$Res> get paginationParams {
+    return $PaginationParamsCopyWith<$Res>(_value.paginationParams, (value) {
+      return _then(_value.copyWith(paginationParams: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -95,10 +120,16 @@ abstract class _$$PaginationPageResponseImplCopyWith<T, $Res>
   ) = __$$PaginationPageResponseImplCopyWithImpl<T, $Res>;
   @override
   @useResult
-  $Res call({PaginationPageState<T> page, int totalCount});
+  $Res call({
+    PaginationPageState<T> page,
+    int totalCount,
+    PaginationParams paginationParams,
+  });
 
   @override
   $PaginationPageStateCopyWith<T, $Res> get page;
+  @override
+  $PaginationParamsCopyWith<$Res> get paginationParams;
 }
 
 /// @nodoc
@@ -119,7 +150,11 @@ class __$$PaginationPageResponseImplCopyWithImpl<T, $Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? page = null, Object? totalCount = null}) {
+  $Res call({
+    Object? page = null,
+    Object? totalCount = null,
+    Object? paginationParams = null,
+  }) {
     return _then(
       _$PaginationPageResponseImpl<T>(
         page:
@@ -132,6 +167,11 @@ class __$$PaginationPageResponseImplCopyWithImpl<T, $Res>
                 ? _value.totalCount
                 : totalCount // ignore: cast_nullable_to_non_nullable
                     as int,
+        paginationParams:
+            null == paginationParams
+                ? _value.paginationParams
+                : paginationParams // ignore: cast_nullable_to_non_nullable
+                    as PaginationParams,
       ),
     );
   }
@@ -143,16 +183,19 @@ class _$PaginationPageResponseImpl<T> implements _PaginationPageResponse<T> {
   const _$PaginationPageResponseImpl({
     required this.page,
     required this.totalCount,
+    required this.paginationParams,
   });
 
   @override
   final PaginationPageState<T> page;
   @override
   final int totalCount;
+  @override
+  final PaginationParams paginationParams;
 
   @override
   String toString() {
-    return 'PaginationPageResponse<$T>(page: $page, totalCount: $totalCount)';
+    return 'PaginationPageResponse<$T>(page: $page, totalCount: $totalCount, paginationParams: $paginationParams)';
   }
 
   @override
@@ -162,11 +205,14 @@ class _$PaginationPageResponseImpl<T> implements _PaginationPageResponse<T> {
             other is _$PaginationPageResponseImpl<T> &&
             (identical(other.page, page) || other.page == page) &&
             (identical(other.totalCount, totalCount) ||
-                other.totalCount == totalCount));
+                other.totalCount == totalCount) &&
+            (identical(other.paginationParams, paginationParams) ||
+                other.paginationParams == paginationParams));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, page, totalCount);
+  int get hashCode =>
+      Object.hash(runtimeType, page, totalCount, paginationParams);
 
   /// Create a copy of PaginationPageResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -184,12 +230,15 @@ abstract class _PaginationPageResponse<T> implements PaginationPageResponse<T> {
   const factory _PaginationPageResponse({
     required final PaginationPageState<T> page,
     required final int totalCount,
+    required final PaginationParams paginationParams,
   }) = _$PaginationPageResponseImpl<T>;
 
   @override
   PaginationPageState<T> get page;
   @override
   int get totalCount;
+  @override
+  PaginationParams get paginationParams;
 
   /// Create a copy of PaginationPageResponse
   /// with the given fields replaced by the non-null parameter values.

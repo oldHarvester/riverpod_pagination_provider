@@ -99,6 +99,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   void _onTotalCountChanged(
     int totalCount,
   ) {
+    _log('total count changed: $totalCount');
     updateState(
       state.copyWith(
         totalCount: totalCount,
@@ -386,6 +387,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
     );
   }
 
+  void onPageUpdated({
+    required int page,
+    required PaginationPageResponse pageResponse,
+    required bool wasRefreshing,
+  }) {}
+
   void markResetToZero() {
     _mustResetToZeroPage = true;
   }
@@ -464,6 +471,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
             totalCount: response.totalCount,
             pageItems: currentPageItems,
           ),
+        );
+        onPageUpdated(
+          page: page,
+          pageResponse: response,
+          wasRefreshing: refreshing,
         );
         onCompleteRefresh(success: true);
         _log('page updated: $page');
@@ -594,11 +606,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
 
     try {
+      final paginationParams = PaginationParams(
+        limit: maxPage * limit,
+        offset: 0,
+      );
       final response = await loadCountItems(
-        paginationParams: PaginationParams(
-          limit: maxPage * limit,
-          offset: 0,
-        ),
+        paginationParams: paginationParams,
       );
       final totalCount = response.totalCount;
       final isCancelled = !isSync();
@@ -613,6 +626,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         final paginationPageResponse = PaginationPageResponse(
           page: pageState,
           totalCount: response.totalCount,
+          paginationParams: paginationParams,
         );
         completers[page]?.complete(paginationPageResponse);
         temp[page] = [...items];
@@ -655,11 +669,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
       try {
         _pageCompleters[page] = completer;
         _increasePageUpdateCount(page);
+        final paginationParams = PaginationParams.fromPage(
+          limit: stateOrNull?.limit ?? initialLimit,
+          page: page,
+        );
         final countItems = await loadCountItems(
-          paginationParams: PaginationParams.fromPage(
-            limit: stateOrNull?.limit ?? initialLimit,
-            page: page,
-          ),
+          paginationParams: paginationParams,
         );
         if (isSync()) {
           final updateCount = _getPageUpdateCount(page);
@@ -672,6 +687,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
           final pageResponse = PaginationPageResponse(
             page: pageState,
             totalCount: countItems.totalCount,
+            paginationParams: paginationParams,
           );
 
           completer.complete(pageResponse);
