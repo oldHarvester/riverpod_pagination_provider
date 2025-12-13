@@ -118,25 +118,32 @@ mixin PaginationNotifierMixin<T, Z, Y>
     PaginationResetType? resetType,
   }) {
     final resultResetType = resetType ?? defaultResetType;
-    _refreshThrottler.execute(
-      duration: schedule ? throttleDuration : Duration.zero,
-      onAction: () {
-        switch (resultResetType) {
-          case PaginationResetType.reloadAll:
-            markReloadAllPages();
-            ref.invalidateSelf();
-          case PaginationResetType.force:
-            markResetToZero();
-            ref.invalidateSelf();
-            break;
-          case PaginationResetType.refresh:
-            ref.invalidateSelf();
-            break;
-          case PaginationResetType.none:
-            break;
-        }
-      },
-    );
+    void action() {
+      switch (resultResetType) {
+        case PaginationResetType.reloadAll:
+          markReloadAllPages();
+          ref.invalidateSelf();
+        case PaginationResetType.force:
+          markResetToZero();
+          ref.invalidateSelf();
+          break;
+        case PaginationResetType.refresh:
+          ref.invalidateSelf();
+          break;
+        case PaginationResetType.none:
+          break;
+      }
+    }
+
+    switch (resultResetType) {
+      case PaginationResetType.none:
+        action();
+      default:
+        _refreshThrottler.execute(
+          duration: schedule ? throttleDuration : Duration.zero,
+          onAction: action,
+        );
+    }
   }
 
   void _closeScheduledTasks() {
