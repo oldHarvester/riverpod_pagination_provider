@@ -96,6 +96,74 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
+  void findAndRemoveItem(
+    bool Function(T item) checker,
+  ) {
+    return findAndUpdateItem(
+      checker,
+      resolveUpdate: (item) {
+        return null;
+      },
+    );
+  }
+
+  void findAndUpdateItem(
+    bool Function(T item) checker, {
+    required T? Function(T item) resolveUpdate,
+    bool multiple = false,
+  }) {
+    // final limit = state.limit;
+    final pageItems = {...state.pageItems};
+    for (var pageIndex = 0; pageIndex < pageItems.length; pageIndex++) {
+      final pageEntry = pageItems.entries.elementAt(pageIndex);
+      final pageState = pageEntry.value;
+      final pageKey = pageEntry.key;
+      final items = [...pageState.items];
+      var complete = false;
+      var found = false;
+      for (var itemIndex = 0; itemIndex < items.length; itemIndex++) {
+        final item = items[itemIndex];
+        final hasFound = checker(item);
+        if (hasFound) {
+          if (!multiple) {
+            complete = true;
+          }
+          found = true;
+          final updatedItem = resolveUpdate(item);
+          if (updatedItem == null) {
+            pageItems[pageKey] = pageState.copyWith(
+              items: items..removeAt(itemIndex),
+            );
+
+            /// TODO: if some item was deleted that totalCount must be changed
+            /// page next items must be swapped by one looking to current `state.limit`
+            /// and also page index must be swapped by -1 because items has been switched
+          } else {
+            pageItems[pageKey] = pageState.copyWith(
+              items:
+                  items
+                    ..removeAt(itemIndex)
+                    ..insert(itemIndex, updatedItem),
+            );
+          }
+          if (complete) {
+            break;
+          }
+        }
+      }
+      if (found) {
+        updateState(
+          state.copyWith(
+            pageItems: pageItems,
+          ),
+        );
+      }
+      if (complete) {
+        break;
+      }
+    }
+  }
+
   void _onTotalCountChanged(
     int totalCount,
   ) {
