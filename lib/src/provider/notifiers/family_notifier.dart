@@ -30,6 +30,13 @@ abstract class PaginationFamilyNotifier<T, Z, Y>
   }
 
   @override
+  Future<PaginatedListResponse<T>> fetchItems(
+    Z loadParams,
+    covariant Y arg,
+    PaginationParams paginationParams,
+  );
+
+  @override
   PaginationState<T, Z, Y> build(Y arg) {
     return initiateBuild();
   }

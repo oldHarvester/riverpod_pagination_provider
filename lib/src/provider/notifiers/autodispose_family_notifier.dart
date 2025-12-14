@@ -23,6 +23,13 @@ abstract class AutoDisposePaginationFamilyNotifier<T, Z, Y>
   Y readArgs() => arg;
 
   @override
+  Future<PaginatedListResponse<T>> fetchItems(
+    Z loadParams,
+    covariant Y arg,
+    PaginationParams paginationParams,
+  );
+
+  @override
   void changeState(PaginationState<T, Z, Y> newState) {
     if (stateOrNull != newState) {
       super.state = newState;
