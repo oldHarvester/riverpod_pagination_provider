@@ -213,6 +213,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     bool showCacheOnRefresh = false,
     bool skipInitialLoading = false,
     InfiniteValue Function()? loading,
+    int? initialLoadingCount,
     InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
     InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
     required InfiniteValue Function(
@@ -235,7 +236,9 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     } else {
       return data(
         state,
-        state.totalCount,
+        initialLoading
+            ? (initialLoadingCount ?? state.totalCount)
+            : state.totalCount,
         state.resetTimes,
         state.itemByIndex,
       );
