@@ -213,7 +213,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     bool showCacheOnRefresh = false,
     bool skipInitialLoading = false,
     InfiniteValue Function()? loading,
-    int? initialLoadingCount,
+    int? defaultLoadingCount,
     InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
     InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
     required InfiniteValue Function(
@@ -234,10 +234,12 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     } else if (isEmpty && empty != null) {
       return empty(state);
     } else {
+      final showDefaultCounts =
+          initialLoading ? true : refreshing && state.totalCount == 0;
       return data(
         state,
-        initialLoading
-            ? (initialLoadingCount ?? state.totalCount)
+        showDefaultCounts
+            ? (defaultLoadingCount ?? state.totalCount)
             : state.totalCount,
         state.resetTimes,
         state.itemByIndex,
