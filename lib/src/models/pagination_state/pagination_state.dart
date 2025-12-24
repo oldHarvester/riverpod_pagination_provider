@@ -214,8 +214,8 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     bool skipInitialLoading = false,
     InfiniteValue Function()? loading,
     int? defaultLoadingCount,
-    InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
-    InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
+    required InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
+    required InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
     required InfiniteValue Function(
       PaginationState<T, Z, Y> data,
       int totalCount,
