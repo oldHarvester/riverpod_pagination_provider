@@ -27,6 +27,8 @@ class _TestInfinitePageState extends ConsumerState<TestInfinitePage> {
         },
       ),
       body: testState.listenInfinite(
+        error: null,
+        empty: null,
         // showCacheOnRefresh: true,
         loading: () {
           return LoadingPlaceholder();
