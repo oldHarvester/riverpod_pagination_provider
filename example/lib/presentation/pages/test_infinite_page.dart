@@ -1,3 +1,4 @@
+import 'package:example/presentation/widgets/input_editing_wrapper.dart';
 import 'package:example/presentation/widgets/loading_placeholder.dart';
 import 'package:example/presentation/widgets/text_tile.dart';
 import 'package:flutter/material.dart';
@@ -34,14 +35,33 @@ class _TestInfinitePageState extends ConsumerState<TestInfinitePage> {
         },
         data: (data, totalCount, resetTimes, itemByIndex) {
           return ListView.separated(
+            key: ValueKey(resetTimes),
             itemCount: totalCount,
-
             itemBuilder: (context, index) {
               final item = itemByIndex(index);
               testController.onItemBuild(index);
-              return TextTile(
-                text: item ?? 'Загрузка...',
-              );
+              if (item == null) {
+                return TextTile(text: 'Загрузка...');
+              } else {
+                return InputEditingWrapper(
+                  initialText: item,
+                  onFieldSubmitted: (value) {
+                    testController.findAndUpdateItem(
+                      (element) {
+                        return item == element;
+                      },
+                      resolveUpdate: (item) {
+                        return value;
+                      },
+                    );
+                  },
+                  builder: (context, controller) {
+                    return TextTile(
+                      text: item,
+                    );
+                  },
+                );
+              }
             },
             separatorBuilder: (context, index) {
               return Divider();
