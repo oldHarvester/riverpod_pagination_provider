@@ -178,7 +178,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void refresh() {
-    reset();
+    reset(
+      resetType: PaginationResetType.refresh,
+    );
   }
 
   void reset({
