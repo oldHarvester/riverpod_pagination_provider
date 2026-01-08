@@ -13,8 +13,8 @@ riverpod_version: &riverpod_version ^2.6.1
 dependencies:
   flutter:
     sdk: flutter
-  freezed_annotation: ^2.2.0
-  json_annotation: ^4.9.0
+  freezed_annotation: '>=2.0.0 <4.0.0'
+  json_annotation: '>=4.0.0 <5.0.0'
   riverpod: *riverpod_version
   flutter_riverpod: *riverpod_version
   flutter_toolkit:
@@ -24,10 +24,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  json_serializable: ^6.9.5
-  build_runner: ^2.3.3
-  freezed: ^2.3.2
+  flutter_lints: ^6.0.0
+  json_serializable: '>=6.9.5 <7.0.0'
+  build_runner: '>=2.3.3 <3.0.0'
+  freezed: '>=2.3.2 <4.0.0'
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
