@@ -5,10 +5,10 @@ homepage:
 publish_to: none
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.0.0
   flutter: ">=1.17.0"
 
-riverpod_version: &riverpod_version ^2.6.1
+riverpod_version: &riverpod_version ">=2.0.0 <=2.6.1"
 
 dependencies:
   flutter:
