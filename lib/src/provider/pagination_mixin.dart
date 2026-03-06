@@ -7,6 +7,10 @@ enum PaginationResetType {
   none,
 }
 
+typedef PaginationItemChecker<T> = bool Function(T item);
+
+typedef PaginationEditResolver<T> = T Function(T item);
+
 mixin PaginationNotifierMixin<T, Z, Y>
     implements PaginationNotifierHelper<T, Z, Y> {
   late final CustomLogger _logger = CustomLogger(
@@ -96,73 +100,91 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  void findAndRemoveItem(
-    bool Function(T item) checker,
-  ) {
-    return findAndUpdateItem(
-      checker,
-      resolveUpdate: (item) {
-        return null;
-      },
-    );
-  }
-
-  void findItem(bool Function(T item) checker) {}
-
-  void findAndUpdateItem(
-    bool Function(T item) checker, {
-    required T? Function(T item) resolveUpdate,
+  /// Returns `true` if some item was found
+  bool findItem(
+    PaginationItemChecker<T> checker, {
     bool multiple = false,
+    required void Function(
+      int pageIndex,
+      int pageKey,
+      PaginationPageState<T> pageState,
+      int itemIndex,
+      T item,
+    ) onItemFound,
   }) {
-    // final limit = state.limit;
+    var foundAny = false;
     final pagesMap = {...state.pageItems};
     for (var pageIndex = 0; pageIndex < pagesMap.length; pageIndex++) {
+      var complete = false;
       final pageEntry = pagesMap.entries.elementAt(pageIndex);
       final pageState = pageEntry.value;
-      final pageKey = pageEntry.key;
       final pageItems = [...pageState.items];
-      var complete = false;
-      var found = false;
       for (var itemIndex = 0; itemIndex < pageItems.length; itemIndex++) {
         final item = pageItems[itemIndex];
-        final hasFound = checker(item);
-        if (hasFound) {
+        final found = checker(item);
+        if (found) {
+          foundAny = true;
+          onItemFound.call(
+              pageIndex, pageEntry.key, pageState, itemIndex, item);
           if (!multiple) {
             complete = true;
-          }
-          found = true;
-          final updatedItem = resolveUpdate(item);
-          if (updatedItem == null) {
-            pagesMap[pageKey] = pageState.copyWith(
-              items: pageItems..removeAt(itemIndex),
-            );
-            /// TODO: if some item was deleted that totalCount must be changed
-            /// page next pageItems must be swapped by one looking to current `state.limit`
-            /// and also page index must be swapped by -1 because pageItems has been switched
-          } else {
-            pagesMap[pageKey] = pageState.copyWith(
-              items:
-                  pageItems
-                    ..removeAt(itemIndex)
-                    ..insert(itemIndex, updatedItem),
-            );
           }
           if (complete) {
             break;
           }
         }
       }
-      if (found) {
-        updateState(
-          state.copyWith(
-            pageItems: pagesMap,
-          ),
-        );
-      }
       if (complete) {
         break;
       }
     }
+    return foundAny;
+  }
+
+  bool editItem(
+    PaginationItemChecker<T> checker, {
+    bool multiple = false,
+    required PaginationEditResolver<T> resolver,
+  }) {
+    final items = {...state.pageItems};
+    final result = findItem(
+      checker,
+      onItemFound: (pageIndex, pageKey, pageState, itemIndex, item) {
+        final edited = resolver(item);
+        final tempItems = [...items[pageKey]!.items]
+          ..removeAt(itemIndex)
+          ..insert(itemIndex, edited);
+        items.update(
+          pageKey,
+          (value) {
+            return value.copyWith(
+              items: tempItems,
+            );
+          },
+        );
+      },
+    );
+    if (result) {
+      updateState(
+        state.copyWith(
+          pageItems: items,
+        ),
+      );
+    }
+    return result;
+  }
+
+  @Deprecated('Use editItem instead')
+  bool findAndUpdateItem(
+    PaginationItemChecker<T> checker, {
+    required T Function(T item) resolveUpdate,
+    bool multiple = false,
+  }) {
+    return editItem(
+      checker,
+      resolver: resolveUpdate,
+      multiple: multiple,
+    );
   }
 
   void _onTotalCountChanged(
@@ -536,10 +558,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
       }
       final currentPageItems = {if (!refreshing) ...state.pageItems};
       currentPageItems[page] = response.page;
-      final totalCountChanged =
-          state.totalCount == 0
-              ? false
-              : response.totalCount != state.totalCount;
+      final totalCountChanged = state.totalCount == 0
+          ? false
+          : response.totalCount != state.totalCount;
 
       if (totalCountChanged && !refreshing) {
         _onTotalCountChanged(response.totalCount);
@@ -568,8 +589,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
           );
           final errorStackTrace = ErrorStackTrace(error: e, stackTrace: stk);
           final currentPageItems = {...state.pageItems};
-          currentPageItems[page] =
-              currentPageItems[page]?.copyWith(
+          currentPageItems[page] = currentPageItems[page]?.copyWith(
                 errorStackTrace: errorStackTrace,
                 isLoading: false,
               ) ??
@@ -581,10 +601,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
           updateState(
             state.copyWith(
               pageItems: currentPageItems,
-              initialError:
-                  setInitialError
-                      ? ErrorStackTrace(error: e, stackTrace: stk)
-                      : state.initialError,
+              initialError: setInitialError
+                  ? ErrorStackTrace(error: e, stackTrace: stk)
+                  : state.initialError,
             ),
           );
           onCompleteRefresh();
