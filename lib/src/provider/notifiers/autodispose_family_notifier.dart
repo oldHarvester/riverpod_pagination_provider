@@ -1,11 +1,8 @@
 part of '../pagination_provider.dart';
 
 typedef AutoDisposePaginationNotifierProviderFamily<
-  NotifierT extends AutoDisposePaginationFamilyNotifier<T, Z, Y>,
-  T,
-  Z,
-  Y
-> = AutoDisposeNotifierProviderFamily<NotifierT, PaginationState<T, Z, Y>, Y>;
+        NotifierT extends AutoDisposePaginationFamilyNotifier<T, Z, Y>, T, Z, Y>
+    = AutoDisposeNotifierProviderFamily<NotifierT, PaginationState<T, Z, Y>, Y>;
 
 abstract class AutoDisposePaginationFamilyNotifier<T, Z, Y>
     extends AutoDisposeFamilyNotifier<PaginationState<T, Z, Y>, Y>

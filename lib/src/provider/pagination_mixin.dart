@@ -870,7 +870,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
     } else {
       if (autoStart) {
         loadPage(initPage);
-        loadPage(0);
+        if (initPage != 0) {
+          loadPage(0);
+        }
       }
     }
 
