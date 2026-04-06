@@ -5,10 +5,10 @@ import '../../../riverpod_pagination_provider.dart';
 part 'pagination_page_response.freezed.dart';
 
 @Freezed(genericArgumentFactories: true, fromJson: false, toJson: false)
-abstract class PaginationPageResponse<T> with _$PaginationPageResponse<T> {
+abstract class PaginationPageResponse<Item> with _$PaginationPageResponse<Item> {
   const factory PaginationPageResponse({
-    required PaginationPageState<T> page,
+    required PaginationPageState<Item> page,
     required int totalCount,
     required PaginationParams paginationParams,
-  }) = _PaginationPageResponse<T>;
+  }) = _PaginationPageResponse<Item>;
 }

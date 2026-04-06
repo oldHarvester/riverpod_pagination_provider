@@ -1,35 +1,19 @@
 part of '../pagination_provider.dart';
 
 typedef PaginationNotifierProvider<
-  NotifierT extends PaginationNotifier<T, Z>,
-  T,
-  Z
-> = NotifierProvider<NotifierT, PaginationState<T, Z, Null>>;
+        NotifierT extends PaginationNotifier<Item, LoadState>, Item, LoadState>
+    = NotifierProvider<NotifierT, PaginationState<Item, LoadState, Null>>;
 
-abstract class PaginationNotifier<T, Z>
-    extends Notifier<PaginationState<T, Z, Null>>
-    with PaginationNotifierMixin<T, Z, Null> {
+abstract class PaginationNotifier<Item, LoadState>
+    extends Notifier<PaginationState<Item, LoadState, Null>>
+    with
+        PaginationNotifierMixin<Item, LoadState, Null,
+            NotifierProviderRef<PaginationState<Item, LoadState, Null>>> {
   @override
-  PaginationState<T, Z, Null> readState() => super.state;
-
-  @override
-  PaginationState<T, Z, Null>? readStateOrNull() => super.stateOrNull;
-
-  @override
-  Ref<PaginationState<T, Z, Null>> readRefence() => super.ref;
-
-  @override
-  Null readArgs() => null;
-
-  @override
-  void changeState(PaginationState<T, Z, Null> newState) {
-    if (stateOrNull != newState) {
-      super.state = newState;
-    }
-  }
-
-  @override
-  PaginationState<T, Z, Null> build() {
+  PaginationState<Item, LoadState, Null> build() {
     return initiateBuild();
   }
+
+  @override
+  Null get arg => null;
 }

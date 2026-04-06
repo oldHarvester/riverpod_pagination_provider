@@ -1,43 +1,23 @@
 part of '../pagination_provider.dart';
 
 typedef PaginationNotifierProviderFamily<
-  NotifierT extends PaginationFamilyNotifier<T, Z, Y>,
-  T,
-  Z,
-  Y
-> = NotifierProviderFamily<NotifierT, PaginationState<T, Z, Y>, Y>;
+        NotifierT extends PaginationFamilyNotifier<Item, LoadState, Arg>, Item, LoadState, Arg>
+    = NotifierProviderFamily<NotifierT, PaginationState<Item, LoadState, Arg>, Arg>;
 
-abstract class PaginationFamilyNotifier<T, Z, Y>
-    extends FamilyNotifier<PaginationState<T, Z, Y>, Y>
-    with PaginationNotifierMixin<T, Z, Y> {
+abstract class PaginationFamilyNotifier<Item, LoadState, Arg>
+    extends FamilyNotifier<PaginationState<Item, LoadState, Arg>, Arg>
+    with
+        PaginationNotifierMixin<Item, LoadState, Arg,
+            NotifierProviderRef<PaginationState<Item, LoadState, Arg>>> {
   @override
-  PaginationState<T, Z, Y> readState() => super.state;
-
-  @override
-  PaginationState<T, Z, Y>? readStateOrNull() => super.stateOrNull;
-
-  @override
-  Ref<PaginationState<T, Z, Y>> readRefence() => super.ref;
-
-  @override
-  Y readArgs() => arg;
-
-  @override
-  void changeState(PaginationState<T, Z, Y> newState) {
-    if (stateOrNull != newState) {
-      super.state = newState;
-    }
-  }
-
-  @override
-  Future<PaginatedListResponse<T>> fetchItems(
-    Z loadParams,
-    covariant Y arg,
+  Future<PaginatedListResponse<Item>> fetchItems(
+    LoadState loadParams,
+    covariant Arg arg,
     PaginationParams paginationParams,
   );
 
   @override
-  PaginationState<T, Z, Y> build(Y arg) {
+  PaginationState<Item, LoadState, Arg> build(Arg arg) {
     return initiateBuild();
   }
 }

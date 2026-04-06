@@ -1,40 +1,23 @@
 part of '../pagination_provider.dart';
 
 typedef AutoDisposePaginationNotifierProviderFamily<
-        NotifierT extends AutoDisposePaginationFamilyNotifier<T, Z, Y>, T, Z, Y>
-    = AutoDisposeNotifierProviderFamily<NotifierT, PaginationState<T, Z, Y>, Y>;
+        NotifierT extends AutoDisposePaginationFamilyNotifier<Item, LoadState, Arg>, Item, LoadState, Arg>
+    = AutoDisposeNotifierProviderFamily<NotifierT, PaginationState<Item, LoadState, Arg>, Arg>;
 
-abstract class AutoDisposePaginationFamilyNotifier<T, Z, Y>
-    extends AutoDisposeFamilyNotifier<PaginationState<T, Z, Y>, Y>
-    with PaginationNotifierMixin<T, Z, Y> {
+abstract class AutoDisposePaginationFamilyNotifier<Item, LoadState, Arg>
+    extends AutoDisposeFamilyNotifier<PaginationState<Item, LoadState, Arg>, Arg>
+    with
+        PaginationNotifierMixin<Item, LoadState, Arg,
+            NotifierProviderRef<PaginationState<Item, LoadState, Arg>>> {
   @override
-  PaginationState<T, Z, Y> readState() => super.state;
-
-  @override
-  PaginationState<T, Z, Y>? readStateOrNull() => super.stateOrNull;
-
-  @override
-  Ref<PaginationState<T, Z, Y>> readRefence() => super.ref;
-
-  @override
-  Y readArgs() => arg;
-
-  @override
-  Future<PaginatedListResponse<T>> fetchItems(
-    Z loadParams,
-    covariant Y arg,
+  Future<PaginatedListResponse<Item>> fetchItems(
+    LoadState loadParams,
+    covariant Arg arg,
     PaginationParams paginationParams,
   );
 
   @override
-  void changeState(PaginationState<T, Z, Y> newState) {
-    if (stateOrNull != newState) {
-      super.state = newState;
-    }
-  }
-
-  @override
-  PaginationState<T, Z, Y> build(Y arg) {
+  PaginationState<Item, LoadState, Arg> build(Arg arg) {
     return initiateBuild();
   }
 }

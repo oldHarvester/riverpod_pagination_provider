@@ -1,29 +1,29 @@
 part of 'pagination_provider.dart';
 
-abstract class PaginationNotifierHelper<T, Z, Y> {
+abstract class PaginationNotifierHelper<Item, LoadState, Arg,
+    PaginationRef extends Ref<PaginationState<Item, LoadState, Arg>>> {
   @protected
-  Z get initialLoadParams;
+  LoadState get initialLoadParams;
 
   @protected
-  Y? readArgs();
+  Arg? get arg;
 
   @protected
-  Ref<PaginationState<T, Z, Y>> readRefence();
+  PaginationRef get ref;
+
+  bool updateShouldNotify(
+    PaginationState<Item, LoadState, Arg> previous,
+    PaginationState<Item, LoadState, Arg> next,
+  ) {
+    return FlexibleEquality().notEquals(previous, next);
+  }
 
   @protected
-  PaginationState<T, Z, Y>? readStateOrNull();
+  PaginationState<Item, LoadState, Arg>? get stateOrNull;
 
   @protected
-  PaginationState<T, Z, Y> readState();
+  PaginationState<Item, LoadState, Arg> get state;
 
   @protected
-  Ref<PaginationState<T, Z, Y>> get ref => readRefence();
-
-  PaginationState<T, Z, Y> get state => readState();
-
-  @protected
-  PaginationState<T, Z, Y>? get stateOrNull => readStateOrNull();
-
-  @protected
-  void changeState(PaginationState<T, Z, Y> newState);
+  set state(PaginationState<Item, LoadState, Arg> state);
 }

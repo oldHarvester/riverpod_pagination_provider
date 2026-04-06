@@ -8,11 +8,11 @@ part 'paginated_list_response.freezed.dart';
   genericArgumentFactories: true,
   makeCollectionsUnmodifiable: true,
 )
-abstract class PaginatedListResponse<T> with _$PaginatedListResponse<T> {
+abstract class PaginatedListResponse<Item> with _$PaginatedListResponse<Item> {
   const PaginatedListResponse._();
 
   const factory PaginatedListResponse({
-    required List<T> results,
+    required List<Item> results,
     required int totalCount,
-  }) = _PaginatedListResponse<T>;
+  }) = _PaginatedListResponse<Item>;
 }

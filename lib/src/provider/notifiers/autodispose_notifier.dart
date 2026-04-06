@@ -1,35 +1,26 @@
 part of '../pagination_provider.dart';
 
 typedef AutoDisposePaginationNotifierProvider<
-  NotifierT extends AutoDisposePaginationNotifier<T, Z>,
-  T,
-  Z
-> = AutoDisposeNotifierProvider<NotifierT, PaginationState<T, Z, Null>>;
+        NotifierT extends AutoDisposePaginationNotifier<Item, LoadState>,
+        Item,
+        LoadState>
+    = AutoDisposeNotifierProvider<NotifierT,
+        PaginationState<Item, LoadState, Null>>;
 
-abstract class AutoDisposePaginationNotifier<T, Z>
-    extends AutoDisposeNotifier<PaginationState<T, Z, Null>>
-    with PaginationNotifierMixin<T, Z, Null> {
+abstract class AutoDisposePaginationNotifier<Item, LoadState>
+    extends AutoDisposeNotifier<PaginationState<Item, LoadState, Null>>
+    with
+        PaginationNotifierMixin<
+            Item,
+            LoadState,
+            Null,
+            AutoDisposeNotifierProviderRef<
+                PaginationState<Item, LoadState, Null>>> {
   @override
-  PaginationState<T, Z, Null> readState() => super.state;
-
-  @override
-  PaginationState<T, Z, Null>? readStateOrNull() => super.stateOrNull;
-
-  @override
-  Ref<PaginationState<T, Z, Null>> readRefence() => super.ref;
-
-  @override
-  Null readArgs() => null;
-
-  @override
-  void changeState(PaginationState<T, Z, Null> newState) {
-    if (stateOrNull != newState) {
-      super.state = newState;
-    }
-  }
-
-  @override
-  PaginationState<T, Z, Null> build() {
+  PaginationState<Item, LoadState, Null> build() {
     return initiateBuild();
   }
+
+  @override
+  Null get arg => null;
 }

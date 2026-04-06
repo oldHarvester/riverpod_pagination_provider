@@ -6,20 +6,20 @@ import '../../../riverpod_pagination_provider.dart';
 part 'pagination_batch_response.freezed.dart';
 
 @Freezed(genericArgumentFactories: true)
-abstract class PaginationBatchResponse<T> with _$PaginationBatchResponse {
+abstract class PaginationBatchResponse<Item> with _$PaginationBatchResponse {
   const PaginationBatchResponse._();
 
   const factory PaginationBatchResponse({
-    @Default({}) Map<int, List<T>> pageItems,
+    @Default({}) Map<int, List<Item>> pageItems,
     ErrorStackTrace? errorStacktrace,
     required int totalCount,
     required bool cancelled,
   }) = _PaginationBatchResponse;
 
-  Map<int, PaginationPageState<T>> pageStates(
+  Map<int, PaginationPageState<Item>> pageStates(
     int Function(int page) updateCount,
   ) {
-    return (pageItems as Map<int, List<T>>).map(
+    return (pageItems as Map<int, List<Item>>).map(
       (key, value) {
         return MapEntry(
           key,

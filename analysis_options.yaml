@@ -2,6 +2,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   errors:
     unused_element: ignore
+    deprecated_member_use: ignore
 
 formatter: 
   trailing_commas: 

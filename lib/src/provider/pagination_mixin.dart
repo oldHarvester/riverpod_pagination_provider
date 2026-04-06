@@ -7,19 +7,20 @@ enum PaginationResetType {
   none,
 }
 
-typedef PaginationItemChecker<T> = bool Function(T item);
+typedef PaginationItemChecker<Item> = bool Function(Item item);
 
-typedef PaginationEditResolver<T> = T Function(T item);
+typedef PaginationEditResolver<Item> = Item Function(Item item);
 
-mixin PaginationNotifierMixin<T, Z, Y>
-    implements PaginationNotifierHelper<T, Z, Y> {
+mixin PaginationNotifierMixin<Item, LoadState, Arg,
+        PaginationRef extends Ref<PaginationState<Item, LoadState, Arg>>>
+    implements PaginationNotifierHelper<Item, LoadState, Arg, PaginationRef> {
   late final CustomLogger _logger = CustomLogger(
     owner: debugLabel ?? 'PaginationProvider',
   );
 
   /// key is Page, value is fetch progress of this page
-  final Map<int, FlexibleCompleter<PaginationPageResponse<T>>> _pageCompleters =
-      {};
+  final Map<int, FlexibleCompleter<PaginationPageResponse<Item>>>
+      _pageCompleters = {};
 
   /// Key is page, value is how many times page has been updated
   final Map<int, int> _pageUpdateCount = {};
@@ -82,9 +83,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
   PaginationPageUpdateType get pageUpdateType =>
       PaginationPageUpdateType.autoUpdateCache;
 
-  Future<PaginatedListResponse<T>> fetchItems(
-    Z loadParams,
-    Y? arg,
+  Future<PaginatedListResponse<Item>> fetchItems(
+    LoadState loadParams,
+    Arg? arg,
     PaginationParams paginationParams,
   );
 
@@ -92,9 +93,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
     _logger.log(object);
   }
 
-  void updateState(PaginationState<T, Z, Y> paginationState) {
+  void updateState(PaginationState<Item, LoadState, Arg> paginationState) {
     if (hasState) {
-      changeState(_valueTransformer(paginationState));
+      state = _valueTransformer(paginationState);
     } else {
       _log('update state skipped due to provider rebuilding');
     }
@@ -102,14 +103,14 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   /// Returns `true` if some item was found
   bool findItem(
-    PaginationItemChecker<T> checker, {
+    PaginationItemChecker<Item> checker, {
     bool multiple = false,
     required void Function(
       int pageIndex,
       int pageKey,
-      PaginationPageState<T> pageState,
+      PaginationPageState<Item> pageState,
       int itemIndex,
-      T item,
+      Item item,
     ) onItemFound,
   }) {
     var foundAny = false;
@@ -142,9 +143,9 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   bool editItem(
-    PaginationItemChecker<T> checker, {
+    PaginationItemChecker<Item> checker, {
     bool multiple = false,
-    required PaginationEditResolver<T> resolver,
+    required PaginationEditResolver<Item> resolver,
   }) {
     final items = {...state.pageItems};
     final result = findItem(
@@ -176,8 +177,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   @Deprecated('Use editItem instead')
   bool findAndUpdateItem(
-    PaginationItemChecker<T> checker, {
-    required T Function(T item) resolveUpdate,
+    PaginationItemChecker<Item> checker, {
+    required Item Function(Item item) resolveUpdate,
     bool multiple = false,
   }) {
     return editItem(
@@ -329,7 +330,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void updateLoadParams(
-    Z Function(Z current) onChange, {
+    LoadState Function(LoadState current) onChange, {
     bool? throttle = false,
   }) {
     changeLoadParams(
@@ -340,7 +341,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   }
 
   void changeLoadParams(
-    Z Function(Z current) onChange, {
+    LoadState Function(LoadState current) onChange, {
     bool? throttle,
     PaginationResetType? resetType,
   }) {
@@ -432,7 +433,8 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  PaginationState<T, Z, Y> _valueTransformer(PaginationState<T, Z, Y> value) {
+  PaginationState<Item, LoadState, Arg> _valueTransformer(
+      PaginationState<Item, LoadState, Arg> value) {
     final extracted = PaginationState.extractItems(value);
     return value.copyWith(
       items: extracted.items,
@@ -474,11 +476,10 @@ mixin PaginationNotifierMixin<T, Z, Y>
     return false;
   }
 
-  Future<PaginatedListResponse<T>> loadCountItems({
+  Future<PaginatedListResponse<Item>> loadCountItems({
     required PaginationParams paginationParams,
   }) async {
-    final loadParams = readStateOrNull()?.loadParams ?? initialLoadParams;
-    final arg = readArgs();
+    final loadParams = stateOrNull?.loadParams ?? initialLoadParams;
     return Future.delayed(
       Duration.zero,
       () {
@@ -489,7 +490,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
 
   void onPageUpdated({
     required int page,
-    required PaginationPageResponse<T> pageResponse,
+    required PaginationPageResponse<Item> pageResponse,
     required bool wasRefreshing,
   }) {}
 
@@ -667,11 +668,11 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  Future<PaginationBatchResponse<T>> _loadBatch(
+  Future<PaginationBatchResponse<Item>> _loadBatch(
     int maxPage,
   ) async {
     var totalCount = 0;
-    final temp = <int, List<T>>{};
+    final temp = <int, List<Item>>{};
     final oldState = stateOrNull;
     final limit = oldState?.limit ?? initialLimit;
     final pages = Iterable.generate(
@@ -687,7 +688,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
           _increasePageUpdateCount(page);
           return MapEntry(
             page,
-            FlexibleCompleter<PaginationPageResponse<T>>(),
+            FlexibleCompleter<PaginationPageResponse<Item>>(),
           );
         },
       ),
@@ -729,7 +730,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         temp[page] = [...items];
       }
 
-      return PaginationBatchResponse<T>(
+      return PaginationBatchResponse<Item>(
         totalCount: totalCount,
         cancelled: isCancelled,
         pageItems: temp,
@@ -751,12 +752,12 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
   }
 
-  Future<PaginationPageResponse<T>?> _initiatePageLoading(int page) async {
+  Future<PaginationPageResponse<Item>?> _initiatePageLoading(int page) async {
     final existCompleter = _pageCompleters[page];
     if (existCompleter != null && !existCompleter.isCompleted) {
       return existCompleter.future;
     } else {
-      final completer = FlexibleCompleter<PaginationPageResponse<T>>();
+      final completer = FlexibleCompleter<PaginationPageResponse<Item>>();
 
       bool isSync() {
         final result = completer.canPerformAction(_pageCompleters[page]);
@@ -775,7 +776,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
         );
         if (isSync()) {
           final updateCount = _getPageUpdateCount(page);
-          final pageState = PaginationPageState<T>(
+          final pageState = PaginationPageState<Item>(
             isLoading: false,
             items: countItems.results,
             updateCount: updateCount,
@@ -820,7 +821,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
   void afterRefresh() {}
 
   @protected
-  PaginationState<T, Z, Y> initiateBuild() {
+  PaginationState<Item, LoadState, Arg> initiateBuild() {
     ref.onDispose(
       () {
         try {
@@ -847,7 +848,7 @@ mixin PaginationNotifierMixin<T, Z, Y>
     }
 
     final newState = _valueTransformer(
-      PaginationState<T, Z, Y>(
+      PaginationState<Item, LoadState, Arg>(
         cachedBeforeRefresh: useCacheOnReload,
         initialLoaded: initialLoaded,
         refreshing: refreshing,

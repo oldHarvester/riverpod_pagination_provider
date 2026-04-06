@@ -14,6 +14,9 @@ class TestPaginationNotifier
   late final CustomLogger logger = CustomLogger(owner: runtimeType.toString());
 
   @override
+  int get initialLimit => 30;
+
+  @override
   Future<PaginatedListResponse<String>> fetchItems(
     Null loadParams,
     Null arg,

@@ -13,15 +13,15 @@ part 'pagination_state.freezed.dart';
   addImplicitFinal: true,
   makeCollectionsUnmodifiable: true,
 )
-abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
+abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item, LoadState, Arg> {
   const PaginationState._();
 
   const factory PaginationState({
-    required Map<int, PaginationPageState<T>> pageItems,
-    required List<T> items,
-    required List<T?> mixedItems,
-    required Z loadParams,
-    Y? extraArgs,
+    required Map<int, PaginationPageState<Item>> pageItems,
+    required List<Item> items,
+    required List<Item?> mixedItems,
+    required LoadState loadParams,
+    Arg? extraArgs,
     required int totalCount,
     required int limit,
     required int initialPage,
@@ -32,11 +32,11 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     required bool refreshing,
     required bool cachedBeforeRefresh,
     ErrorStackTrace? initialError,
-  }) = _PaginationState<T, Z, Y>;
+  }) = _PaginationState<Item, LoadState, Arg>;
 
   factory PaginationState.fromItems({
-    required List<T> items,
-    required Z loadParams,
+    required List<Item> items,
+    required LoadState loadParams,
   }) {
     return PaginationState(
       cachedBeforeRefresh: false,
@@ -60,12 +60,12 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     );
   }
 
-  static ({List<T> items, List<T?> mixedItems}) extractItems<T>(
-    PaginationState<T, dynamic, dynamic> state, {
+  static ({List<Item> items, List<Item?> mixedItems}) extractItems<Item>(
+    PaginationState<Item, dynamic, dynamic> state, {
     bool onlyOrdered = true,
   }) {
-    final items = <T>[];
-    final mixedTemp = <T?>[];
+    final items = <Item>[];
+    final mixedTemp = <Item?>[];
     bool stopAddingItems = false;
     final totalCount = state.totalCount;
     if (totalCount == 0) {
@@ -86,7 +86,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     return (items: items, mixedItems: mixedTemp);
   }
 
-  PaginationState<T, Z, Y> get nonCachedState {
+  PaginationState<Item, LoadState, Arg> get nonCachedState {
     return cachedBeforeRefresh
         ? copyWith(
           items: [],
@@ -160,15 +160,15 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     return 0;
   }
 
-  List<T> get orderedItems {
+  List<Item> get orderedItems {
     return extractItems(this, onlyOrdered: false).items;
   }
 
-  PaginationPageState<T> getPageState(int page) {
+  PaginationPageState<Item> getPageState(int page) {
     return pageItems[page] ?? PaginationPageState();
   }
 
-  T? itemByIndex(
+  Item? itemByIndex(
     int index, {
     bool showCache = true,
   }) {
@@ -215,12 +215,12 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     InfiniteValue Function()? loading,
     int? defaultLoadingCount,
     required InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
-    required InfiniteValue Function(PaginationState<T, Z, Y> data)? empty,
+    required InfiniteValue Function(PaginationState<Item, LoadState, Arg> data)? empty,
     required InfiniteValue Function(
-      PaginationState<T, Z, Y> data,
+      PaginationState<Item, LoadState, Arg> data,
       int totalCount,
       int resetTimes,
-      T? Function(int index) itemByIndex,
+      Item? Function(int index) itemByIndex,
     )
     data,
   }) {
@@ -251,7 +251,7 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
     ListenValue Function(
       bool initialLoading,
       ErrorStackTrace? errorStacktrace,
-      PaginationState<T, Z, Y> data,
+      PaginationState<Item, LoadState, Arg> data,
     )
     callback, {
     bool skipRefreshing = true,
@@ -268,8 +268,8 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   WhenValue when<WhenValue>({
     required WhenValue Function() loading,
     required WhenValue Function(Object error, StackTrace stackTrace) error,
-    required WhenValue Function(PaginationState<T, Z, Y> state) data,
-    WhenValue Function(PaginationState<T, Z, Y> state)? empty,
+    required WhenValue Function(PaginationState<Item, LoadState, Arg> state) data,
+    WhenValue Function(PaginationState<Item, LoadState, Arg> state)? empty,
     bool skipRefreshing = false,
     bool showCacheOnRefresh = false,
     bool skipInitialLoading = false,
@@ -295,8 +295,8 @@ abstract class PaginationState<T, Z, Y> with _$PaginationState<T, Z, Y> {
   WhenValue? whenOrNull<WhenValue>({
     WhenValue? Function()? loading,
     WhenValue? Function(Object error, StackTrace stackTrace)? error,
-    WhenValue Function(PaginationState<T, Z, Y> state)? empty,
-    WhenValue? Function(PaginationState<T, Z, Y> state)? data,
+    WhenValue Function(PaginationState<Item, LoadState, Arg> state)? empty,
+    WhenValue? Function(PaginationState<Item, LoadState, Arg> state)? data,
     bool skipRefreshing = false,
     bool showCacheOnRefresh = false,
     bool skipInitialLoading = false,

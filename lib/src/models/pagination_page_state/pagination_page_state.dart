@@ -9,15 +9,15 @@ part 'pagination_page_state.freezed.dart';
   genericArgumentFactories: true,
   makeCollectionsUnmodifiable: true,
 )
-abstract class PaginationPageState<T> with _$PaginationPageState<T> {
+abstract class PaginationPageState<Item> with _$PaginationPageState<Item> {
   const PaginationPageState._();
 
   const factory PaginationPageState({
-    @Default([]) List<T> items,
+    @Default([]) List<Item> items,
     ErrorStackTrace? errorStackTrace,
     @Default(true) bool isLoading,
     @Default(0) int updateCount,
-  }) = _PaginationPageState<T>;
+  }) = _PaginationPageState<Item>;
 
   bool get hasError => errorStackTrace != null;
 
@@ -25,8 +25,8 @@ abstract class PaginationPageState<T> with _$PaginationPageState<T> {
 
   WhenValue when<WhenValue>(
     WhenValue Function() loading,
-    WhenValue Function(PaginationPageState<T> state) data,
-    WhenValue Function(PaginationPageState<T> state)? empty,
+    WhenValue Function(PaginationPageState<Item> state) data,
+    WhenValue Function(PaginationPageState<Item> state)? empty,
     WhenValue Function(Object error, StackTrace stackTrace) error,
   ) {
     final errorStackTrace = this.errorStackTrace;
@@ -44,8 +44,8 @@ abstract class PaginationPageState<T> with _$PaginationPageState<T> {
 
   WhenValue? whenOrNull<WhenValue>(
     WhenValue? Function()? loading,
-    WhenValue? Function(PaginationPageState<T> state)? data,
-    WhenValue Function(PaginationPageState<T> state)? empty,
+    WhenValue? Function(PaginationPageState<Item> state)? data,
+    WhenValue Function(PaginationPageState<Item> state)? empty,
     WhenValue? Function(Object error, StackTrace stackTrace)? error,
   ) {
     final errorStackTrace = this.errorStackTrace;
