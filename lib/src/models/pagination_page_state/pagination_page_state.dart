@@ -23,12 +23,12 @@ abstract class PaginationPageState<Item> with _$PaginationPageState<Item> {
 
   bool get isEmpty => items.isEmpty;
 
-  WhenValue when<WhenValue>(
-    WhenValue Function() loading,
-    WhenValue Function(PaginationPageState<Item> state) data,
-    WhenValue Function(PaginationPageState<Item> state)? empty,
-    WhenValue Function(Object error, StackTrace stackTrace) error,
-  ) {
+  WhenValue when<WhenValue>({
+    required WhenValue Function() loading,
+    required WhenValue Function(PaginationPageState<Item> state) data,
+    required WhenValue Function(Object error, StackTrace stackTrace) error,
+    required WhenValue Function(PaginationPageState<Item> state)? empty,
+  }) {
     final errorStackTrace = this.errorStackTrace;
     if (isLoading) {
       return loading();
@@ -42,12 +42,12 @@ abstract class PaginationPageState<Item> with _$PaginationPageState<Item> {
     }
   }
 
-  WhenValue? whenOrNull<WhenValue>(
+  WhenValue? whenOrNull<WhenValue>({
     WhenValue? Function()? loading,
     WhenValue? Function(PaginationPageState<Item> state)? data,
     WhenValue Function(PaginationPageState<Item> state)? empty,
     WhenValue? Function(Object error, StackTrace stackTrace)? error,
-  ) {
+  }) {
     final errorStackTrace = this.errorStackTrace;
     if (isLoading) {
       return loading?.call();
