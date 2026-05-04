@@ -15,5 +15,13 @@ abstract class PaginationNotifier<Item, LoadState>
   }
 
   @override
+  bool updateShouldNotify(
+    PaginationState<Item, LoadState, Null> previous,
+    PaginationState<Item, LoadState, Null> next,
+  ) {
+    return FlexibleEquality().notEquals(previous, next);
+  }
+
+  @override
   Null get arg => null;
 }

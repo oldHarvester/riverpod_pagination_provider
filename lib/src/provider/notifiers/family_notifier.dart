@@ -10,6 +10,11 @@ abstract class PaginationFamilyNotifier<Item, LoadState, Arg>
         PaginationNotifierMixin<Item, LoadState, Arg,
             NotifierProviderRef<PaginationState<Item, LoadState, Arg>>> {
   @override
+  bool updateShouldNotify(PaginationState<Item, LoadState, Arg> previous, PaginationState<Item, LoadState, Arg> next) {
+    return FlexibleEquality().notEquals(previous, next);
+  }
+  
+  @override
   Future<PaginatedListResponse<Item>> fetchItems(
     LoadState loadParams,
     covariant Arg arg,

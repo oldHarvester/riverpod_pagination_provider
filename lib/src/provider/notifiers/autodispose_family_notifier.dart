@@ -1,14 +1,28 @@
 part of '../pagination_provider.dart';
 
 typedef AutoDisposePaginationNotifierProviderFamily<
-        NotifierT extends AutoDisposePaginationFamilyNotifier<Item, LoadState, Arg>, Item, LoadState, Arg>
-    = AutoDisposeNotifierProviderFamily<NotifierT, PaginationState<Item, LoadState, Arg>, Arg>;
+        NotifierT extends AutoDisposePaginationFamilyNotifier<Item, LoadState,
+            Arg>,
+        Item,
+        LoadState,
+        Arg>
+    = AutoDisposeNotifierProviderFamily<NotifierT,
+        PaginationState<Item, LoadState, Arg>, Arg>;
 
 abstract class AutoDisposePaginationFamilyNotifier<Item, LoadState, Arg>
-    extends AutoDisposeFamilyNotifier<PaginationState<Item, LoadState, Arg>, Arg>
+    extends AutoDisposeFamilyNotifier<PaginationState<Item, LoadState, Arg>,
+        Arg>
     with
         PaginationNotifierMixin<Item, LoadState, Arg,
             NotifierProviderRef<PaginationState<Item, LoadState, Arg>>> {
+  @override
+  bool updateShouldNotify(
+    PaginationState<Item, LoadState, Arg> previous,
+    PaginationState<Item, LoadState, Arg> next,
+  ) {
+    return FlexibleEquality().notEquals(previous, next);
+  }
+
   @override
   Future<PaginatedListResponse<Item>> fetchItems(
     LoadState loadParams,

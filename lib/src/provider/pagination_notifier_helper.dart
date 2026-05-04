@@ -11,13 +11,6 @@ abstract class PaginationNotifierHelper<Item, LoadState, Arg,
   @protected
   PaginationRef get ref;
 
-  bool updateShouldNotify(
-    PaginationState<Item, LoadState, Arg> previous,
-    PaginationState<Item, LoadState, Arg> next,
-  ) {
-    return FlexibleEquality().notEquals(previous, next);
-  }
-
   @protected
   PaginationState<Item, LoadState, Arg>? get stateOrNull;
 

@@ -17,6 +17,14 @@ abstract class AutoDisposePaginationNotifier<Item, LoadState>
             AutoDisposeNotifierProviderRef<
                 PaginationState<Item, LoadState, Null>>> {
   @override
+  bool updateShouldNotify(
+    PaginationState<Item, LoadState, Null> previous,
+    PaginationState<Item, LoadState, Null> next,
+  ) {
+    return FlexibleEquality().notEquals(previous, next);
+  }
+
+  @override
   PaginationState<Item, LoadState, Null> build() {
     return initiateBuild();
   }
