@@ -329,6 +329,8 @@ mixin PaginationNotifierMixin<Item, LoadState, Arg,
     }
   }
 
+  LoadState get loadParams => state.loadParams;
+
   void updateLoadParams(
     LoadState Function(LoadState current) onChange, {
     bool? throttle = false,
