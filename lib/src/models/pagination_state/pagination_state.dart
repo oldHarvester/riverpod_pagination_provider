@@ -235,7 +235,7 @@ abstract class PaginationState<Item, LoadState, Arg>
     } else if (isEmpty && empty != null) {
       return empty(state);
     } else {
-      final showDefaultCounts = initialLoading ? true : refreshing;
+      final showDefaultCounts = initialLoading ? true : refreshing && totalCount == 0;
       return data(
         state,
         showDefaultCounts
