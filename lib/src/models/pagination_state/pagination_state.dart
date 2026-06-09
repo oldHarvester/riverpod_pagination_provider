@@ -13,7 +13,8 @@ part 'pagination_state.freezed.dart';
   addImplicitFinal: true,
   makeCollectionsUnmodifiable: true,
 )
-abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item, LoadState, Arg> {
+abstract class PaginationState<Item, LoadState, Arg>
+    with _$PaginationState<Item, LoadState, Arg> {
   const PaginationState._();
 
   const factory PaginationState({
@@ -89,10 +90,10 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
   PaginationState<Item, LoadState, Arg> get nonCachedState {
     return cachedBeforeRefresh
         ? copyWith(
-          items: [],
-          mixedItems: [],
-          pageItems: {},
-        )
+            items: [],
+            mixedItems: [],
+            pageItems: {},
+          )
         : this;
   }
 
@@ -123,10 +124,10 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
   }
 
   Set<int> get loadedPages {
-    final temp =
-        pageItems.keys.toList()..sort(
-          (a, b) => a.compareTo(b),
-        );
+    final temp = pageItems.keys.toList()
+      ..sort(
+        (a, b) => a.compareTo(b),
+      );
     return temp.toSet();
   }
 
@@ -215,14 +216,14 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
     InfiniteValue Function()? loading,
     int? defaultLoadingCount,
     required InfiniteValue Function(ErrorStackTrace errorStacktrace)? error,
-    required InfiniteValue Function(PaginationState<Item, LoadState, Arg> data)? empty,
+    required InfiniteValue Function(PaginationState<Item, LoadState, Arg> data)?
+        empty,
     required InfiniteValue Function(
       PaginationState<Item, LoadState, Arg> data,
       int totalCount,
       int resetTimes,
       Item? Function(int index) itemByIndex,
-    )
-    data,
+    ) data,
   }) {
     final initialError = this.initialError;
     final state = showCacheOnRefresh ? this : nonCachedState;
@@ -234,8 +235,7 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
     } else if (isEmpty && empty != null) {
       return empty(state);
     } else {
-      final showDefaultCounts =
-          initialLoading ? true : refreshing && state.totalCount == 0;
+      final showDefaultCounts = initialLoading ? true : refreshing;
       return data(
         state,
         showDefaultCounts
@@ -252,8 +252,7 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
       bool initialLoading,
       ErrorStackTrace? errorStacktrace,
       PaginationState<Item, LoadState, Arg> data,
-    )
-    callback, {
+    ) callback, {
     bool skipRefreshing = true,
     bool showCacheOnRefresh = false,
   }) {
@@ -268,7 +267,8 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
   WhenValue when<WhenValue>({
     required WhenValue Function() loading,
     required WhenValue Function(Object error, StackTrace stackTrace) error,
-    required WhenValue Function(PaginationState<Item, LoadState, Arg> state) data,
+    required WhenValue Function(PaginationState<Item, LoadState, Arg> state)
+        data,
     WhenValue Function(PaginationState<Item, LoadState, Arg> state)? empty,
     bool skipRefreshing = false,
     bool showCacheOnRefresh = false,
@@ -282,14 +282,14 @@ abstract class PaginationState<Item, LoadState, Arg> with _$PaginationState<Item
     return cachedBeforeRefresh && showCacheOnRefresh
         ? data(this)
         : !skipInitialLoading && initialLoading
-        ? loading()
-        : !skipRefreshing && refreshing
-        ? loading()
-        : errorStackTrace != null
-        ? error(errorStackTrace.error, errorStackTrace.stackTrace)
-        : isEmpty
-        ? empty?.call(this) ?? data(this)
-        : data(this);
+            ? loading()
+            : !skipRefreshing && refreshing
+                ? loading()
+                : errorStackTrace != null
+                    ? error(errorStackTrace.error, errorStackTrace.stackTrace)
+                    : isEmpty
+                        ? empty?.call(this) ?? data(this)
+                        : data(this);
   }
 
   WhenValue? whenOrNull<WhenValue>({
