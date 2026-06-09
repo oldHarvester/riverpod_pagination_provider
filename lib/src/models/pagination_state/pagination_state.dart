@@ -91,7 +91,10 @@ abstract class PaginationState<Item, LoadState, Arg>
     return cachedBeforeRefresh
         ? copyWith(
             items: [],
-            mixedItems: [],
+            mixedItems: List.generate(
+              totalCount,
+              (index) => null,
+            ),
             pageItems: {},
           )
         : this;
@@ -235,7 +238,8 @@ abstract class PaginationState<Item, LoadState, Arg>
     } else if (isEmpty && empty != null) {
       return empty(state);
     } else {
-      final showDefaultCounts = initialLoading ? true : refreshing && totalCount == 0;
+      final showDefaultCounts =
+          initialLoading ? true : refreshing && totalCount == 0;
       return data(
         state,
         showDefaultCounts
